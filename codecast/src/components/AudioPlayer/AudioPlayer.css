@@ -15,6 +15,14 @@
   height: 80px;
 }
 
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .audio-player {
+    background-color: #1a1b1e;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.4);
+  }
+}
+
 /* 🧾 Metadata container: show + episode titles */
 .audio-player__info {
   width: 240px;
@@ -26,7 +34,7 @@
 .audio-player__show-title {
   font-weight: 600;
   font-size: 0.9rem;
-  color: #333;
+  color: white;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -36,10 +44,21 @@
 /* 🏷️ Episode title: subtitle style */
 .audio-player__episode-title {
   font-size: 0.8rem;
-  color: #666;
+  color: white;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Dark mode text colors */
+@media (prefers-color-scheme: dark) {
+  .audio-player__show-title {
+    color: white;
+  }
+  
+  .audio-player__episode-title {
+    color: white;
+  }
 }
 
 /* 🎛️ Main control group: flex row for all playback controls */
@@ -74,9 +93,16 @@
 .audio-player__time-current,
 .audio-player__time-total {
   font-size: 0.8rem;
-  color: #666;
+  color: white;
   width: 45px;
   text-align: center;
+}
+
+@media (prefers-color-scheme: dark) {
+  .audio-player__time-current,
+  .audio-player__time-total {
+    color: white;
+  }
 }
 
 /* 📶 Seek bar (clickable) */
@@ -111,13 +137,25 @@
   transition: width 0.1s linear;
 }
 
+@media (prefers-color-scheme: dark) {
+  .audio-player__progress-bg {
+    background-color: #3a3b3c;
+  }
+}
+
 /* 🔊 Volume section: icon + slider */
 .audio-player__volume {
   display: flex;
   align-items: center;
   gap: 8px;
   width: 120px;
-  color: #666;
+  color: white;
+}
+
+@media (prefers-color-scheme: dark) {
+  .audio-player__volume {
+    color: white;
+  }
 }
 
 /* 📊 Volume bar container */
@@ -152,6 +190,230 @@
   transition: width 0.1s linear;
 }
 
+@media (prefers-color-scheme: dark) {
+  .audio-player__volume-bg {
+    background-color: #3a3b3c;
+  }
+}
+
+/* ⏮️⏭️ Control buttons styling */
+.audio-player__control-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background-color: #e5e7eb;
+  color: #4338ca;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.audio-player__control-btn:hover {
+  background-color: #d1d5db;
+  transform: scale(1.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  .audio-player__control-btn {
+    background-color: #2a2b2c;
+  }
+  
+  .audio-player__control-btn:hover {
+    background-color: #3a3b3c;
+  }
+}
+
+/* 🔊 Hover effect for volume icon */
+.audio-player__volume-btn {
+  cursor: pointer;
+  padding: 4px;
+  margin: -4px;
+  color: white;
+  transition: color 0.2s ease;
+  background: none;
+  border: none;
+}
+
+.audio-player__volume-btn:hover {
+  color: #4338ca;
+}
+
+@media (prefers-color-scheme: dark) {
+  .audio-player__volume-btn {
+    color: white;
+  }
+  
+  .audio-player__volume-btn:hover {
+    color: #818cf8;
+  }
+}
+
+/* 📝 Playback rate controls */
+.audio-player__playback-rate {
+  position: relative;
+  margin: 0 8px;
+}
+
+.audio-player__rate-btn {
+  background-color: #e5e7eb;
+  border: none;
+  border-radius: 4px;
+  color: #4338ca;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.audio-player__rate-btn:hover {
+  background-color: #d1d5db;
+}
+
+.audio-player__rate-menu {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  width: 80px;
+}
+
+.audio-player__rate-option {
+  padding: 8px;
+  border: none;
+  background: none;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.audio-player__rate-option:hover {
+  background-color: #f3f4f6;
+}
+
+.audio-player__rate-option--active {
+  font-weight: 600;
+  color: #4338ca;
+  background-color: #e5e7eb;
+}
+
+@media (prefers-color-scheme: dark) {
+  .audio-player__rate-btn {
+    background-color: #2a2b2c;
+    color: #818cf8;
+  }
+  
+  .audio-player__rate-btn:hover {
+    background-color: #3a3b3c;
+  }
+  
+  .audio-player__rate-menu {
+    background-color: #1a1b1e;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  }
+  
+  .audio-player__rate-option:hover {
+    background-color: #2a2b2c;
+  }
+  
+  .audio-player__rate-option--active {
+    color: #818cf8;
+    background-color: #3a3b3c;
+  }
+}
+
+/* ⏰ Sleep timer controls */
+.audio-player__sleep-timer {
+  position: relative;
+  margin: 0 8px;
+}
+
+.audio-player__timer-btn {
+  background-color: #e5e7eb;
+  border: none;
+  border-radius: 4px;
+  color: #4338ca;
+  font-weight: 500;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.audio-player__timer-btn:hover {
+  background-color: #d1d5db;
+}
+
+.audio-player__timer-remaining {
+  font-size: 0.75rem;
+  margin-left: 2px;
+}
+
+.audio-player__timer-menu {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  width: 100px;
+}
+
+.audio-player__timer-option {
+  padding: 8px;
+  border: none;
+  background: none;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.audio-player__timer-option:hover {
+  background-color: #f3f4f6;
+}
+
+@media (prefers-color-scheme: dark) {
+  .audio-player__timer-btn {
+    background-color: #2a2b2c;
+    color: #818cf8;
+  }
+  
+  .audio-player__timer-btn:hover {
+    background-color: #3a3b3c;
+  }
+  
+  .audio-player__timer-menu {
+    background-color: #1a1b1e;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  }
+  
+  .audio-player__timer-option:hover {
+    background-color: #2a2b2c;
+  }
+}
+
+/* Playlist button specific styling */
+.audio-player__playlist-btn {
+  margin-right: 8px;
+}
+
 /* 🖥️ Responsive tweaks: reduce spacing and shrink info on tablets */
 @media (max-width: 768px) {
   .audio-player {
@@ -160,6 +422,11 @@
 
   .audio-player__info {
     width: 160px;
+  }
+  
+  .audio-player__playback-rate,
+  .audio-player__sleep-timer {
+    display: none;
   }
 }
 
@@ -190,37 +457,4 @@
     width: 28px;
     height: 28px;
   }
-}
-
-/* ⏮️⏭️ Optional: Previous/Next track button styling */
-.audio-player__control-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: none;
-  background-color: #e5e7eb;
-  color: #4338ca;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.2s ease;
-}
-
-.audio-player__control-btn:hover {
-  background-color: #d1d5db;
-  transform: scale(1.05);
-}
-
-/* 🔊 Hover effect for volume icon */
-.audio-player__volume-btn {
-  cursor: pointer;
-  padding: 4px;
-  margin: -4px;
-  color: #666;
-  transition: color 0.2s ease;
-}
-
-.audio-player__volume-btn:hover {
-  color: #4338ca;
 }

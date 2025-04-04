@@ -1,10 +1,13 @@
 // src/components/AudioPlayer/AudioPlayer.tsx
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { usePlayerStore } from '../../store/playerStore';
 import { useAudio } from '../../hooks/useAudio';
 import { formatTime } from '../../utils/dateUtils';
+import PlaylistQueue from './PlaylistQueue';
 import './AudioPlayer.css';
+
+const SKIP_SECONDS = 15; // Number of seconds to skip with forward/backward buttons
 
 /**
  * AudioPlayer component handles playback controls and progress tracking
@@ -15,6 +18,9 @@ import './AudioPlayer.css';
 const AudioPlayer: React.FC = () => {
   const progressRef = useRef<HTMLDivElement>(null);
   const volumeRef = useRef<HTMLDivElement>(null);
+  const [showPlaybackRateMenu, setShowPlaybackRateMenu] = useState(false);
+  const [showSleepTimer, setShowSleepTimer] = useState(false);
+  const [showPlaylist, setShowPlaylist] = useState(false);
 
   const {
     isPlaying,
@@ -23,26 +29,53 @@ const AudioPlayer: React.FC = () => {
     duration,
     volume,
     isMuted,
+    playbackRate,
     playlist,
     currentEpisodeIndex,
+    sleepTimer,
     togglePlayPause,
     setCurrentTime,
     setVolume,
     toggleMute,
+    setPlaybackRate,
     skipToNext,
     skipToPrevious,
+    skipForward,
+    skipBackward,
+    setSleepTimer,
   } = usePlayerStore();
 
   const { audioRef } = useAudio();
 
-  // Debug indicator to show when component re-renders
+  // Calculate remaining time for sleep timer if active
+  const [sleepTimerRemaining, setSleepTimerRemaining] = useState<number | null>(null);
+  
   useEffect(() => {
-    console.log('AudioPlayer rendered', { 
-      currentTime, 
-      duration,
-      progress: (currentTime / duration) * 100 || 0 
-    });
-  }, [currentTime, duration]);
+    if (!sleepTimer) {
+      setSleepTimerRemaining(null);
+      return;
+    }
+    
+    const updateRemainingTime = () => {
+      const remaining = Math.max(0, sleepTimer - Date.now());
+      setSleepTimerRemaining(remaining);
+      
+      if (remaining > 0) {
+        requestAnimationFrame(updateRemainingTime);
+      }
+    };
+    
+    requestAnimationFrame(updateRemainingTime);
+  }, [sleepTimer]);
+
+  // Debug audio playback
+  useEffect(() => {
+    if (currentEpisode) {
+      console.log('Current audio file:', currentEpisode.episode.file);
+      console.log('Audio element:', audioRef.current);
+      console.log('Is playing:', isPlaying);
+    }
+  }, [currentEpisode, audioRef, isPlaying]);
 
   /**
    * Handles click on progress bar to seek to a specific time.
@@ -61,6 +94,20 @@ const AudioPlayer: React.FC = () => {
   };
 
   /**
+   * Handles touch on progress bar for mobile devices
+   */
+  const handleProgressTouch = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!progressRef.current || !currentEpisode || !audioRef.current) return;
+
+    const rect = progressRef.current.getBoundingClientRect();
+    const percent = (e.touches[0].clientX - rect.left) / rect.width;
+    const newTime = Math.max(0, Math.min(duration, percent * duration));
+
+    setCurrentTime(newTime);
+    audioRef.current.currentTime = newTime;
+  };
+
+  /**
    * Handles click on volume bar to set audio volume.
    */
   const handleVolumeClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -74,6 +121,20 @@ const AudioPlayer: React.FC = () => {
   };
   
   /**
+   * Handle the skip forward button - uses the store skipForward function
+   */
+  const handleSkipForward = () => {
+    skipForward(SKIP_SECONDS);
+  };
+  
+  /**
+   * Handle the skip backward button - uses the store skipBackward function
+   */
+  const handleSkipBackward = () => {
+    skipBackward(SKIP_SECONDS);
+  };
+  
+  /**
    * Handle next episode button click
    */
   const handleNextClick = () => {
@@ -84,7 +145,7 @@ const AudioPlayer: React.FC = () => {
     console.log('Skipping to next episode');
     skipToNext();
   };
-  
+
   /**
    * Handle previous episode button click
    */
@@ -95,12 +156,40 @@ const AudioPlayer: React.FC = () => {
         audioRef.current.currentTime = 0;
         setCurrentTime(0);
       }
-    } else if (currentEpisodeIndex > 0) {
+    } else if (playlist.length > 0 && currentEpisodeIndex > 0) {
       console.log('Skipping to previous episode');
       skipToPrevious();
     }
   };
-
+  
+  /**
+   * Creates playback rate options
+   */
+  const handlePlaybackRateChange = (rate: number) => {
+    setPlaybackRate(rate);
+    setShowPlaybackRateMenu(false);
+  };
+  
+  /**
+   * Handle sleep timer selection
+   */
+  const handleSetSleepTimer = (minutes: number | null) => {
+    setSleepTimer(minutes);
+    setShowSleepTimer(false);
+  };
+  
+  /**
+   * Format sleep timer remaining time
+   */
+  const formatSleepTimerRemaining = () => {
+    if (!sleepTimerRemaining) return '';
+    
+    const minutes = Math.floor(sleepTimerRemaining / 60000);
+    const seconds = Math.floor((sleepTimerRemaining % 60000) / 1000);
+    
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+  
   // Don't render the player if no episode is currently selected
   if (!currentEpisode) return null;
 
@@ -111,6 +200,12 @@ const AudioPlayer: React.FC = () => {
   // Check if there are next/previous episodes available
   const hasNextEpisode = playlist.length > 0 && currentEpisodeIndex < playlist.length - 1;
   const hasPreviousEpisode = playlist.length > 0 && currentEpisodeIndex > 0;
+  
+  // Available playback rate options
+  const playbackRates = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+  
+  // Sleep timer options (in minutes)
+  const sleepTimerOptions = [5, 15, 30, 60, null]; // null means "Cancel"
 
   return (
     <div className="audio-player">
@@ -156,6 +251,30 @@ const AudioPlayer: React.FC = () => {
           </svg>
         </button>
 
+        {/* Skip backward button */}
+        <button
+          className="audio-player__control-btn"
+          onClick={handleSkipBackward}
+          aria-label={`Skip backward ${SKIP_SECONDS} seconds`}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            stroke="currentColor"
+            strokeWidth="2"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 8 8 12 12 16" />
+            <text x="12" y="16" fontSize="8" fontWeight="bold" fill="currentColor" textAnchor="middle">
+              {SKIP_SECONDS}
+            </text>
+          </svg>
+        </button>
+
         {/* Play/Pause toggle button */}
         <button
           className="audio-player__play-pause"
@@ -182,6 +301,30 @@ const AudioPlayer: React.FC = () => {
               // Play icon (triangle)
               <polygon points="5 3 19 12 5 21 5 3"></polygon>
             )}
+          </svg>
+        </button>
+
+        {/* Skip forward button */}
+        <button
+          className="audio-player__control-btn"
+          onClick={handleSkipForward}
+          aria-label={`Skip forward ${SKIP_SECONDS} seconds`}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            stroke="currentColor"
+            strokeWidth="2"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 16 16 12 12 8" />
+            <text x="12" y="16" fontSize="8" fontWeight="bold" fill="currentColor" textAnchor="middle">
+              {SKIP_SECONDS}
+            </text>
           </svg>
         </button>
 
@@ -218,6 +361,7 @@ const AudioPlayer: React.FC = () => {
           className="audio-player__progress-container"
           ref={progressRef}
           onClick={handleProgressClick}
+          onTouchStart={handleProgressTouch}
         >
           <div className="audio-player__progress-bg"></div>
           <div
@@ -231,6 +375,94 @@ const AudioPlayer: React.FC = () => {
           {formatTime(duration)}
         </div>
 
+        {/* Playback rate control */}
+        <div className="audio-player__playback-rate">
+          <button 
+            className="audio-player__rate-btn"
+            onClick={() => setShowPlaybackRateMenu(!showPlaybackRateMenu)}
+            aria-label="Change playback speed"
+          >
+            {playbackRate}x
+          </button>
+          
+          {showPlaybackRateMenu && (
+            <div className="audio-player__rate-menu">
+              {playbackRates.map(rate => (
+                <button
+                  key={rate}
+                  className={`audio-player__rate-option ${playbackRate === rate ? 'audio-player__rate-option--active' : ''}`}
+                  onClick={() => handlePlaybackRateChange(rate)}
+                >
+                  {rate}x
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Sleep timer button */}
+        <div className="audio-player__sleep-timer">
+          <button
+            className="audio-player__timer-btn"
+            onClick={() => setShowSleepTimer(!showSleepTimer)}
+            aria-label={sleepTimer ? `Sleep timer: ${formatSleepTimerRemaining()} remaining` : "Set sleep timer"}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              stroke="currentColor"
+              strokeWidth="2"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            {sleepTimer && <span className="audio-player__timer-remaining">{formatSleepTimerRemaining()}</span>}
+          </button>
+          
+          {showSleepTimer && (
+            <div className="audio-player__timer-menu">
+              {sleepTimerOptions.map((option, index) => (
+                <button
+                  key={index}
+                  className="audio-player__timer-option"
+                  onClick={() => handleSetSleepTimer(option)}
+                >
+                  {option === null ? "Cancel" : `${option} min`}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Playlist button */}
+        <button
+          className="audio-player__control-btn audio-player__playlist-btn"
+          onClick={() => setShowPlaylist(!showPlaylist)}
+          aria-label="Show playlist"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            stroke="currentColor"
+            strokeWidth="2"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="8" y1="6" x2="21" y2="6"></line>
+            <line x1="8" y1="12" x2="21" y2="12"></line>
+            <line x1="8" y1="18" x2="21" y2="18"></line>
+            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+          </svg>
+        </button>
+
         {/* Volume control UI */}
         <div className="audio-player__volume">
           {/* Volume/mute button */}
@@ -238,7 +470,6 @@ const AudioPlayer: React.FC = () => {
             onClick={toggleMute}
             className="audio-player__volume-btn"
             aria-label={isMuted ? 'Unmute' : 'Mute'}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0' }}
           >
             <svg
               viewBox="0 0 24 24"
@@ -284,6 +515,11 @@ const AudioPlayer: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Playlist Queue (conditionally rendered) */}
+      {showPlaylist && (
+        <PlaylistQueue onClose={() => setShowPlaylist(false)} />
+      )}
     </div>
   );
 };
