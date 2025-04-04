@@ -1,0 +1,178 @@
+/* src/components/ShowCarousel/ShowCarousel.css */
+
+/* 📦 Carousel Wrapper */
+.carousel {
+    margin-bottom: 48px;
+  }
+  
+  /* 🧭 Carousel Heading */
+  .carousel__title {
+    font-size: 1.75rem;
+    margin-bottom: 24px;
+    color: #111827; /* Neutral dark text */
+  }
+  
+  /* 🖼️ Outer container for sliding content */
+  .carousel__container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    height: 360px;
+  }
+  
+  /* 🎞️ Relative container for absolutely positioned slides */
+  .carousel__content {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+  
+  /* 📺 Single slide styling */
+  .carousel__slide {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column; /* Default for mobile */
+    transition: transform 0.5s ease;
+    text-decoration: none;
+    color: inherit;
+    background-color: #0f172a; /* Slate background for contrast */
+  }
+  
+  /* 💻 Row layout on tablets and up */
+  @media (min-width: 768px) {
+    .carousel__slide {
+      flex-direction: row;
+    }
+  }
+  
+  /* 🖼️ Image Container */
+  .carousel__image-container {
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+  }
+  
+  /* 📱 Half width on desktop */
+  @media (min-width: 768px) {
+    .carousel__image-container {
+      width: 50%;
+      height: 100%;
+    }
+  }
+  
+  /* 🖼️ Image Fitting */
+  .carousel__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  
+  /* 📝 Info Panel */
+  .carousel__info {
+    padding: 16px;
+    background-color: #0f172a;
+    color: white;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  /* 💻 Larger padding on wider screens */
+  @media (min-width: 768px) {
+    .carousel__info {
+      width: 50%;
+      padding: 32px;
+    }
+  }
+  
+  /* 🎙️ Show Title */
+  .carousel__show-title {
+    font-size: 1.75rem;
+    margin: 0 0 8px 0;
+    color: white;
+  }
+  
+  /* 📅 Show Meta Info (seasons + updated date) */
+  .carousel__show-details {
+    color: #94a3b8;
+    margin: 0 0 16px 0;
+    font-size: 0.9rem;
+  }
+  
+  /* 🧾 Description with line clamping */
+  .carousel__show-description {
+    color: #cbd5e1;
+    line-height: 1.6;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  /* ⬅️ ➡️ Carousel Arrows */
+  .carousel__arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    color: #111827;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s;
+  }
+  
+  .carousel__arrow:hover {
+    background-color: white;
+  }
+  
+  .carousel__arrow--left {
+    left: 16px;
+  }
+  
+  .carousel__arrow--right {
+    right: 16px;
+  }
+  
+  /* 🔘 Indicator Dots */
+  .carousel__indicators {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  
+  .carousel__indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #e5e7eb;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+  }
+  
+  .carousel__indicator:hover {
+    background-color: #d1d5db;
+  }
+  
+  /* 🔵 Active Dot */
+  .carousel__indicator--active {
+    background-color: #4338ca;
+    transform: scale(1.2);
+  }
+  
