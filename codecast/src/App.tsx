@@ -1,35 +1,45 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// src/App.tsx
 
-function App() {
-  const [count, setCount] = useState(0)
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import MainLayout from './layouts/MainLayout';
+import Home from './pages/Home';
+import Show from './pages/Show';
+import Season from './pages/Season';
+import Favorites from './pages/Favorites';
+import NotFound from './pages/NotFound';
 
+/**
+ * App component – root of the application.
+ * - Wraps all pages with React Router and MainLayout.
+ * - Defines routes for all available pages.
+ *
+ * @returns {JSX.Element}
+ */
+const App: React.FC = () => {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <Router>
+      {/* Shared layout applied to all routes */}
+      <MainLayout>
+        <Routes>
+          {/* 🎬 Home page – list of all shows */}
+          <Route path="/" element={<Home />} />
 
-export default App
+          {/* 📄 Show detail page */}
+          <Route path="/show/:id" element={<Show />} />
+
+          {/* 📚 Specific season under a show */}
+          <Route path="/show/:id/season/:seasonNumber" element={<Season />} />
+
+          {/* ❤️ List of favorited episodes */}
+          <Route path="/favorites" element={<Favorites />} />
+
+          {/* ❌ Catch-all route for undefined pages */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </MainLayout>
+    </Router>
+  );
+};
+
+export default App;
