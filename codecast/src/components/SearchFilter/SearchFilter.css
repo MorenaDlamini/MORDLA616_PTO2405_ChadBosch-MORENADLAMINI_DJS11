@@ -1,0 +1,71 @@
+/* src/components/SearchFilter/SearchFilter.css */
+
+/* 🔍 Wrapper for the entire search filter component */
+.search-filter {
+    margin-bottom: 24px;
+    width: 100%;
+    max-width: 480px; /* Restrict width for alignment in wider layouts */
+  }
+  
+  /* 📦 Container for input and icons */
+  .search-filter__input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  /* 🕵️‍♂️ Search icon inside input (absolute position) */
+  .search-filter__icon {
+    position: absolute;
+    left: 12px;
+    color: #9ca3af; /* Tailwind's gray-400 */
+  }
+  
+  /* 🧾 Main search input field */
+  .search-filter__input {
+    width: 100%;
+    padding: 12px 12px 12px 38px; /* Left padding for icon space */
+    border: 1px solid #e5e7eb;    /* Tailwind's gray-200 */
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #111827;               /* Tailwind's gray-900 */
+    background-color: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  
+  /* 🧠 Enhanced focus feedback for accessibility */
+  .search-filter__input:focus {
+    outline: none;
+    border-color: #4338ca; /* Indigo-700 */
+    box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.15); /* Glow effect */
+  }
+  
+  /* 🌫️ Placeholder styling for subtle guidance */
+  .search-filter__input::placeholder {
+    color: #9ca3af; /* Muted gray text */
+  }
+  
+  /* ❎ Clear button inside the input */
+  .search-filter__clear-btn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+  }
+  
+  /* 🎯 Visual feedback on hover for clear button */
+  .search-filter__clear-btn:hover {
+    background-color: #f3f4f6; /* Light gray hover state */
+    color: #4b5563;            /* Slightly darker text */
+  }
+  
