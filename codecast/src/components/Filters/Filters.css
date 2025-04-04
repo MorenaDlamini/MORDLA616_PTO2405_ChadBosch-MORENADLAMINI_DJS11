@@ -1,0 +1,71 @@
+/* src/components/Filters/Filters.css */
+
+/* 🧱 Container for all filter controls (sort, genre, etc.) */
+.filters {
+    display: flex;
+    flex-wrap: wrap; /* Allow filters to wrap on smaller screens */
+    gap: 16px;
+    margin-bottom: 24px;
+    background-color: #f9fafb; /* Light background for separation */
+    padding: 16px;
+    border-radius: 8px;
+  }
+  
+  /* 🔲 Group wrapper for label and select input */
+  .filters__group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  /* 🏷️ Label for select input */
+  .filters__label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #4b5563;
+  }
+  
+  /* ⬇️ Styled select input for filter dropdowns */
+  .filters__select {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db; /* Gray-300 */
+    background-color: white;
+    font-size: 0.9rem;
+    color: #111827; /* Gray-900 */
+    cursor: pointer;
+    transition: border-color 0.2s;
+    min-width: 140px; /* Ensures dropdowns have usable width */
+  }
+  
+  /* ⬇️ Hover interaction for select inputs */
+  .filters__select:hover {
+    border-color: #9ca3af; /* Gray-400 */
+  }
+  
+  /* ⬇️ Focus state for accessibility and visual feedback */
+  .filters__select:focus {
+    outline: none;
+    border-color: #4338ca; /* Indigo-700 */
+    box-shadow: 0 0 0 1px rgba(67, 56, 202, 0.2); /* Indigo ring */
+  }
+  
+  /* 📱 Responsive layout for mobile */
+  @media (max-width: 576px) {
+    .filters {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+  
+    .filters__group {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+    }
+  
+    .filters__select {
+      width: 100%;
+    }
+  }
+  
