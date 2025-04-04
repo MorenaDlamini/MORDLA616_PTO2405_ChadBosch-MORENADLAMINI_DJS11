@@ -56,15 +56,18 @@
 /* 🔍 Filter + Search alignment */
 .page__search-and-filters {
   display: flex;
-  flex-direction: column;
+  flex-direction: row; /* Default to row layout */
+  align-items: center;
+  justify-content: space-between;
   gap: 16px;
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
 }
 
-@media (min-width: 768px) {
+/* When search and filters should appear in a column */
+@media (max-width: 640px) {
   .page__search-and-filters {
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: stretch; /* Full width on mobile */
   }
 }
 
@@ -161,6 +164,27 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 32px;
+}
+
+/* Responsive grid adjustments */
+@media (max-width: 1200px) {
+  .show-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .show-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 24px;
+  }
+}
+
+@media (max-width: 576px) {
+  .show-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+  }
 }
 
 /* ----------------------------------------
