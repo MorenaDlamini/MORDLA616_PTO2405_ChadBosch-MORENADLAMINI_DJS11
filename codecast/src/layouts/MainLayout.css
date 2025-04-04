@@ -1,0 +1,185 @@
+/* src/layouts/MainLayout.css */
+
+/* 🌐 Root layout container */
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-background);
+}
+
+/* 📦 Max-width wrapper for content alignment */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* 🔝 Sticky header with shadow and horizontal spacing */
+.header {
+  background-color: var(--color-surface);
+  box-shadow: 0 1px 3px var(--color-shadow);
+  padding: 16px 0;
+  position: sticky;
+  top: 0;
+  z-index: 900; /* Below audio player (1000) */
+}
+
+/* 📏 Flex layout for header contents */
+.header .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 🔗 Brand logo (split into two styled spans) */
+.header__logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-decoration: none;
+  display: flex;
+}
+
+/* 🎨 Brand color differentiation */
+.header__logo-code {
+  color: var(--color-text-dark);
+}
+
+.header__logo-cast {
+  color: var(--color-primary);
+}
+
+/* 📍 Top navigation links container */
+.nav {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+/* 🔗 Base nav link styling */
+.nav__link {
+  color: var(--color-text-medium);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+  padding: 4px 0;
+  position: relative;
+}
+
+/* ✨ Hover state for nav links */
+.nav__link:hover {
+  color: var(--color-text-dark);
+}
+
+/* 🟣 Active nav link override */
+.nav__link--active {
+  color: var(--color-primary);
+}
+
+/* 🔽 Underline indicator for active link */
+.nav__link--active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--color-primary);
+  border-radius: 1px;
+}
+
+/* 📄 Main content area */
+.main {
+  flex-grow: 1;
+  padding: 32px 0 64px; /* Padding bottom by default */
+}
+
+/* 🎧 Extra bottom padding when audio player is visible */
+.main--with-player {
+  padding-bottom: 144px; /* Leaves room for fixed audio player */
+}
+
+/* 🗑️ Fixed-position reset button */
+.reset-button-container {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 800; /* Below player, above most UI */
+}
+
+/* 🛠️ Reset button styling */
+.reset-button {
+  background-color: #ef4444; /* Red-500 */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  box-shadow: 0 2px 4px var(--color-shadow);
+}
+
+/* 🔁 Hover state for reset button */
+.reset-button:hover {
+  background-color: #dc2626; /* Red-600 */
+}
+
+/* 🌓 Theme toggle button */
+.theme-toggle {
+  background-color: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-text-medium);
+  margin-left: 16px;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle:hover {
+  background-color: var(--color-border);
+  color: var(--color-text-dark);
+}
+
+.theme-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* 📱 Responsive adjustments for mobile screens */
+@media (max-width: 576px) {
+  .container {
+    padding: 0 16px;
+  }
+
+  .header__logo {
+    font-size: 1.25rem;
+  }
+
+  .nav {
+    gap: 16px;
+  }
+
+  .reset-button {
+    font-size: 0.75rem;
+    padding: 6px 12px;
+  }
+  
+  .theme-toggle {
+    width: 32px;
+    height: 32px;
+    margin-left: 12px;
+  }
+  
+  .theme-toggle svg {
+    width: 16px;
+    height: 16px;
+  }
+}
