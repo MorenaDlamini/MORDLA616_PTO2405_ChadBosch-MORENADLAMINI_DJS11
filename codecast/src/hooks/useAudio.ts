@@ -4,15 +4,18 @@ import { useRef, useEffect } from 'react';
 import { usePlayerStore } from '../store/playerStore';
 
 /**
- * Custom hook that manages audio element behavior:
- * - Binds playback state (play/pause)
- * - Syncs volume, currentTime, duration, and playbackRate
- * - Handles progress saving and completion tracking
- * - Implements keyboard controls and skip actions
- * - Prevents accidental navigation during playback
- * - Manages sleep timer functionality
+ * Custom hook to synchronize HTMLAudioElement behavior with the global player state.
  *
- * @returns Ref to be attached to <audio> element
+ * Responsibilities:
+ * - Manages play/pause state
+ * - Synchronizes volume, playbackRate, duration, and currentTime
+ * - Saves playback progress periodically
+ * - Handles completion and auto-advance
+ * - Implements keyboard shortcuts for playback control
+ * - Prevents accidental navigation while playing
+ * - Manages sleep timer to pause playback
+ *
+ * @returns Object containing a ref to be attached to the <audio> element
  */
 export const useAudio = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -39,21 +42,19 @@ export const useAudio = () => {
   } = usePlayerStore();
 
   /**
-   * Handle play/pause toggle when player state changes
+   * Sync the audio element's playback state with the global store (play/pause).
    */
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
     if (isPlaying) {
-      // Use promise to handle autoplay restrictions
       const playPromise = audio.play();
-      
+
       if (playPromise !== undefined) {
         playPromise.catch((error) => {
           console.error('Audio playback failed:', error);
-          
-          // If autoplay was blocked, update the store state
+          // Reset playing state in the store if autoplay fails
           usePlayerStore.setState(state => ({
             ...state,
             isPlaying: false
@@ -66,7 +67,7 @@ export const useAudio = () => {
   }, [isPlaying, currentEpisode]);
 
   /**
-   * Sync volume with global player state
+   * Sync audio element volume when updated in store.
    */
   useEffect(() => {
     const audio = audioRef.current;
@@ -76,7 +77,7 @@ export const useAudio = () => {
   }, [volume]);
 
   /**
-   * Sync playback rate with global player state
+   * Sync playback rate with global store setting.
    */
   useEffect(() => {
     const audio = audioRef.current;
@@ -86,7 +87,7 @@ export const useAudio = () => {
   }, [playbackRate]);
 
   /**
-   * Seek to updated currentTime if it's significantly different
+   * If the currentTime from store differs from audio element, seek to it.
    */
   useEffect(() => {
     const audio = audioRef.current;
@@ -99,9 +100,9 @@ export const useAudio = () => {
   }, [currentTime, currentEpisode]);
 
   /**
-   * Register event listeners on <audio> for:
-   * - Metadata (duration)
-   * - Completion detection (ended)
+   * Attach event listeners to the audio element for:
+   * - Metadata loading (set duration)
+   * - Episode end (mark completed and advance)
    */
   useEffect(() => {
     const audio = audioRef.current;
@@ -113,6 +114,9 @@ export const useAudio = () => {
 
     const handleEnded = () => {
       markAsCompleted();
+      setTimeout(() => {
+        skipToNext();
+      }, 500);
     };
 
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
@@ -122,10 +126,10 @@ export const useAudio = () => {
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [setDuration, markAsCompleted]);
+  }, [setDuration, markAsCompleted, skipToNext]);
 
   /**
-   * Use requestAnimationFrame for smoother progress updates
+   * Smoothly updates the store with audio progress using requestAnimationFrame.
    */
   useEffect(() => {
     const audio = audioRef.current;
@@ -135,14 +139,14 @@ export const useAudio = () => {
       }
       return;
     }
-    
+
     const updateProgress = () => {
       setCurrentTime(audio.currentTime);
       animationFrameId.current = requestAnimationFrame(updateProgress);
     };
-    
+
     animationFrameId.current = requestAnimationFrame(updateProgress);
-    
+
     return () => {
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
@@ -151,7 +155,7 @@ export const useAudio = () => {
   }, [isPlaying, setCurrentTime]);
 
   /**
-   * Auto-save progress every 10 seconds
+   * Saves the current playback position every 10 seconds.
    */
   useEffect(() => {
     if (!isPlaying || !currentEpisode) return;
@@ -168,88 +172,87 @@ export const useAudio = () => {
   }, [isPlaying, currentEpisode, saveProgress]);
 
   /**
-   * Implement keyboard controls for playback
+   * Adds global keyboard shortcuts for playback control.
+   * - Space: toggle play/pause
+   * - ArrowLeft: rewind
+   * - ArrowRight: forward
+   * - M: mute
+   * - N: next episode
+   * - P: previous episode
    */
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Only respond to keyboard events when they're not in an input field
       const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || 
-          target.tagName === 'TEXTAREA' || 
-          target.isContentEditable) {
-        return;
-      }
-      
-      if (!currentEpisode) return;
-      
-      // Space bar toggles play/pause
-      if (e.code === 'Space') {
-        e.preventDefault();
-        togglePlayPause();
-      }
-      
-      // Left arrow seeks backward 10 seconds
-      if (e.code === 'ArrowLeft') {
-        e.preventDefault();
-        skipBackward(10);
-      }
-      
-      // Right arrow seeks forward 10 seconds
-      if (e.code === 'ArrowRight') {
-        e.preventDefault();
-        skipForward(10);
-      }
-      
-      // M key toggles mute
-      if (e.code === 'KeyM') {
-        e.preventDefault();
-        toggleMute();
-      }
-      
-      // N key for Next episode
-      if (e.code === 'KeyN') {
-        e.preventDefault();
-        skipToNext();
-      }
-      
-      // P key for Previous episode
-      if (e.code === 'KeyP') {
-        e.preventDefault();
-        skipToPrevious();
+      const isInputField =
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable;
+
+      if (isInputField || !currentEpisode) return;
+
+      switch (e.code) {
+        case 'Space':
+          e.preventDefault();
+          togglePlayPause();
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          skipBackward(10);
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          skipForward(10);
+          break;
+        case 'KeyM':
+          e.preventDefault();
+          toggleMute();
+          break;
+        case 'KeyN':
+          e.preventDefault();
+          skipToNext();
+          break;
+        case 'KeyP':
+          e.preventDefault();
+          skipToPrevious();
+          break;
       }
     };
-    
+
     document.addEventListener('keydown', handleKeyDown);
-    
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [currentEpisode, togglePlayPause, toggleMute, skipToNext, skipToPrevious, skipForward, skipBackward]);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [
+    currentEpisode,
+    togglePlayPause,
+    toggleMute,
+    skipToNext,
+    skipToPrevious,
+    skipForward,
+    skipBackward
+  ]);
 
   /**
-   * Implement sleep timer functionality
+   * Automatically pauses playback when sleep timer expires.
    */
   useEffect(() => {
     if (!sleepTimer || !isPlaying) return;
-    
+
     const checkSleepTimer = () => {
       if (Date.now() >= sleepTimer) {
         togglePlayPause();
-        // Reset sleep timer in store
         usePlayerStore.setState(state => ({
-          ...state, 
+          ...state,
           sleepTimer: null
         }));
       }
     };
-    
+
     const intervalId = setInterval(checkSleepTimer, 1000);
-    
+
     return () => clearInterval(intervalId);
   }, [sleepTimer, isPlaying, togglePlayPause]);
 
   /**
-   * Prevent page unload if audio is playing
+   * Warn user before page unload if playback is active.
    */
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {

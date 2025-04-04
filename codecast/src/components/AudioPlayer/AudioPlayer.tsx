@@ -138,7 +138,7 @@ const AudioPlayer: React.FC = () => {
    * Handle next episode button click
    */
   const handleNextClick = () => {
-    if (playlist.length === 0 || currentEpisodeIndex === playlist.length - 1) {
+    if (playlist.length === 0 || currentEpisodeIndex === null || currentEpisodeIndex >= playlist.length - 1) {
       console.log('No next episode available');
       return;
     }
@@ -156,7 +156,7 @@ const AudioPlayer: React.FC = () => {
         audioRef.current.currentTime = 0;
         setCurrentTime(0);
       }
-    } else if (playlist.length > 0 && currentEpisodeIndex > 0) {
+    } else if (playlist.length > 0 && currentEpisodeIndex !== null && currentEpisodeIndex > 0) {
       console.log('Skipping to previous episode');
       skipToPrevious();
     }
@@ -197,9 +197,13 @@ const AudioPlayer: React.FC = () => {
   const progressPercent = (currentTime / duration) * 100 || 0;
   const volumePercent = volume * 100;
 
-  // Check if there are next/previous episodes available
-  const hasNextEpisode = playlist.length > 0 && currentEpisodeIndex < playlist.length - 1;
-  const hasPreviousEpisode = playlist.length > 0 && currentEpisodeIndex > 0;
+  // Check if there are next/previous episodes available (null-safe version)
+  const hasNextEpisode = playlist.length > 0 && 
+                        currentEpisodeIndex !== null && 
+                        currentEpisodeIndex < playlist.length - 1;
+  const hasPreviousEpisode = playlist.length > 0 && 
+                            currentEpisodeIndex !== null && 
+                            currentEpisodeIndex > 0;
   
   // Available playback rate options
   const playbackRates = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];

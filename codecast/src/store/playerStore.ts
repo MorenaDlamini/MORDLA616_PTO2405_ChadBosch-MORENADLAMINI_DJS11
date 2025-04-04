@@ -149,18 +149,12 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   episodeProgress: savedState.episodeProgress,
   sleepTimer: null,
 
-  /**
-   * Toggles between play and pause state.
-   */
   togglePlayPause: () => {
     set(state => ({
       isPlaying: !state.isPlaying
     }));
   },
 
-  /**
-   * Starts playback of a selected episode and resumes progress if available.
-   */
   playEpisode: (showId, showTitle, seasonNumber, seasonTitle, episode) => {
     const state = get();
     const episodeItem = { showId, showTitle, seasonNumber, seasonTitle, episode };
@@ -193,9 +187,6 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     }
   },
 
-  /**
-   * Appends an episode to the playlist if not already added.
-   */
   addToPlaylist: (showId, showTitle, seasonNumber, seasonTitle, episode) => {
     const state = get();
     const newItem = { showId, showTitle, seasonNumber, seasonTitle, episode };
@@ -218,9 +209,6 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     alert(`Added "${episode.title}" to queue`);
   },
 
-  /**
-   * Removes an episode from the playlist and adjusts current index.
-   */
   removeFromPlaylist: index => {
     const state = get();
     const currentIndex = state.currentEpisodeIndex;
@@ -238,12 +226,14 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
           });
           return;
         } else if (index < newPlaylist.length) {
-          set({
-            playlist: newPlaylist,
-            currentEpisodeIndex: newCurrentIndex,
-            currentEpisode: newPlaylist[newCurrentIndex]
-          });
-          return;
+          if (newCurrentIndex !== null) {
+            set({
+              playlist: newPlaylist,
+              currentEpisodeIndex: newCurrentIndex,
+              currentEpisode: newPlaylist[newCurrentIndex]
+            });
+            return;
+          }
         } else {
           newCurrentIndex = newPlaylist.length - 1;
           set({
@@ -264,9 +254,6 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     });
   },
 
-  /**
-   * Moves a playlist item from one index to another.
-   */
   moveInPlaylist: (fromIndex, toIndex) => {
     const state = get();
     const newPlaylist = [...state.playlist];
@@ -291,9 +278,6 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     });
   },
 
-  /**
-   * Clears the playlist but optionally retains the current episode.
-   */
   clearPlaylist: () => {
     const state = get();
     if (state.currentEpisode) {
@@ -309,9 +293,6 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     }
   },
 
-  /**
-   * Skips to the next episode in the playlist if available.
-   */
   skipToNext: () => {
     const state = get();
     if (
@@ -342,9 +323,6 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     }
   },
 
-  /**
-   * Skips to previous episode or restarts current one.
-   */
   skipToPrevious: () => {
     const state = get();
     if (state.currentTime > 3) {
@@ -384,23 +362,14 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     }
   },
 
-  /**
-   * Sets the current playback time.
-   */
   setCurrentTime: time => {
     set({ currentTime: time });
   },
 
-  /**
-   * Sets the total duration of the current episode.
-   */
   setDuration: duration => {
     set({ duration });
   },
 
-  /**
-   * Skips forward in the episode by given seconds.
-   */
   skipForward: seconds => {
     const state = get();
     if (!state.currentEpisode) return;
@@ -414,9 +383,6 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     }
   },
 
-  /**
-   * Skips backward in the episode by given seconds.
-   */
   skipBackward: seconds => {
     const state = get();
     if (!state.currentEpisode) return;
@@ -430,34 +396,22 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     }
   },
 
-  /**
-   * Sets playback volume and persists it.
-   */
   setVolume: volume => {
     set({ volume });
     localStorage.setItem('codecast_volume', volume.toString());
   },
 
-  /**
-   * Toggles mute state based on current volume.
-   */
   toggleMute: () => {
     set(state => ({
       isMuted: state.isMuted === 0 ? state.volume : 0
     }));
   },
 
-  /**
-   * Sets playback speed and saves to localStorage.
-   */
   setPlaybackRate: rate => {
     set({ playbackRate: rate });
     localStorage.setItem('codecast_playback_rate', rate.toString());
   },
 
-  /**
-   * Sets or clears the sleep timer.
-   */
   setSleepTimer: minutes => {
     if (minutes === null) {
       set({ sleepTimer: null });
@@ -467,9 +421,6 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     }
   },
 
-  /**
-   * Marks the current episode as completed and persists the state.
-   */
   markAsCompleted: () => {
     const state = get();
     if (!state.currentEpisode) return;
@@ -482,9 +433,6 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     localStorage.setItem('codecast_completed_episodes', JSON.stringify(updatedCompleted));
   },
 
-  /**
-   * Saves playback progress for current episode.
-   */
   saveProgress: () => {
     const state = get();
     if (!state.currentEpisode || state.currentTime < 10) return;
@@ -497,27 +445,18 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     localStorage.setItem('codecast_episode_progress', JSON.stringify(updatedProgress));
   },
 
-  /**
-   * Checks if an episode has been marked as completed.
-   */
   isCompleted: (showId, seasonNumber, episodeNumber) => {
     const state = get();
     const key = getEpisodeKey(showId, seasonNumber, episodeNumber);
     return !!state.completedEpisodes[key];
   },
 
-  /**
-   * Retrieves saved playback progress for a specific episode.
-   */
   getEpisodeProgress: (showId, seasonNumber, episodeNumber) => {
     const state = get();
     const key = getEpisodeKey(showId, seasonNumber, episodeNumber);
     return state.episodeProgress[key] || null;
   },
 
-  /**
-   * Resets playback state when leaving a show.
-   */
   resetShowState: () => {
     set({
       currentEpisode: null,
