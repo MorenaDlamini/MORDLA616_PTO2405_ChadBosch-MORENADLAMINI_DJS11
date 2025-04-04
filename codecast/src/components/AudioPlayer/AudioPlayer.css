@@ -1,0 +1,226 @@
+/* src/components/AudioPlayer/AudioPlayer.css */
+
+/* 🎧 Sticky bottom audio player: visible across the app */
+.audio-player {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  z-index: 1000; /* Ensures player stays above all content */
+  height: 80px;
+}
+
+/* 🧾 Metadata container: show + episode titles */
+.audio-player__info {
+  width: 240px;
+  margin-right: 16px;
+  overflow: hidden; /* Prevents text overflow */
+}
+
+/* 🏷️ Show title styling: bold + truncated */
+.audio-player__show-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+
+/* 🏷️ Episode title: subtitle style */
+.audio-player__episode-title {
+  font-size: 0.8rem;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 🎛️ Main control group: flex row for all playback controls */
+.audio-player__controls {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  gap: 8px;
+}
+
+/* ▶️ Primary play/pause control */
+.audio-player__play-pause {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background-color: #4338ca;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.audio-player__play-pause:hover {
+  background-color: #4f46e5;
+  transform: scale(1.05);
+}
+
+/* ⏱️ Elapsed and total time */
+.audio-player__time-current,
+.audio-player__time-total {
+  font-size: 0.8rem;
+  color: #666;
+  width: 45px;
+  text-align: center;
+}
+
+/* 📶 Seek bar (clickable) */
+.audio-player__progress-container {
+  position: relative;
+  height: 6px;
+  flex-grow: 1;
+  cursor: pointer;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+/* ⬜ Progress background */
+.audio-player__progress-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #e5e7eb;
+  border-radius: 3px;
+}
+
+/* 🟪 Playback progress */
+.audio-player__progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background-color: #4338ca;
+  border-radius: 3px;
+  transition: width 0.1s linear;
+}
+
+/* 🔊 Volume section: icon + slider */
+.audio-player__volume {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 120px;
+  color: #666;
+}
+
+/* 📊 Volume bar container */
+.audio-player__volume-container {
+  position: relative;
+  height: 4px;
+  flex-grow: 1;
+  cursor: pointer;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+/* ⬜ Volume background bar */
+.audio-player__volume-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #e5e7eb;
+  border-radius: 2px;
+}
+
+/* 🟪 Active volume level */
+.audio-player__volume-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background-color: #4338ca;
+  border-radius: 2px;
+  transition: width 0.1s linear;
+}
+
+/* 🖥️ Responsive tweaks: reduce spacing and shrink info on tablets */
+@media (max-width: 768px) {
+  .audio-player {
+    padding: 12px 16px;
+  }
+
+  .audio-player__info {
+    width: 160px;
+  }
+}
+
+/* 📱 Responsive stacking for smaller devices */
+@media (max-width: 576px) {
+  .audio-player {
+    flex-direction: column;
+    height: auto;
+    padding: 8px 16px;
+  }
+
+  .audio-player__info {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+
+  .audio-player__controls {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .audio-player__volume {
+    width: 80px;
+  }
+
+  .audio-player__control-btn {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* ⏮️⏭️ Optional: Previous/Next track button styling */
+.audio-player__control-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background-color: #e5e7eb;
+  color: #4338ca;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.audio-player__control-btn:hover {
+  background-color: #d1d5db;
+  transform: scale(1.05);
+}
+
+/* 🔊 Hover effect for volume icon */
+.audio-player__volume-btn {
+  cursor: pointer;
+  padding: 4px;
+  margin: -4px;
+  color: #666;
+  transition: color 0.2s ease;
+}
+
+.audio-player__volume-btn:hover {
+  color: #4338ca;
+}
