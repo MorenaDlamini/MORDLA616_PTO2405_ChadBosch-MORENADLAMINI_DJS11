@@ -1,0 +1,173 @@
+/* src/components/FavoritesList/FavoritesList.css */
+
+/* 📚 Main container for the entire favorites list */
+.favorites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 32px; /* Space between grouped blocks */
+}
+
+/* 🚫 Empty state block shown when no favorites exist */
+.favorites-list__empty {
+  text-align: center;
+  padding: 48px 0;
+  background-color: var(--color-background);
+  border-radius: 8px;
+  color: var(--color-text-light);
+}
+
+.favorites-list__empty p {
+  margin: 8px 0;
+}
+
+/* 📦 Container for grouped favorites (by show + season) */
+.favorites-group {
+  background-color: var(--color-surface);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px var(--color-shadow);
+  overflow: hidden;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* 📌 Header for each favorite group (includes show and season links) */
+.favorites-group__header {
+  padding: 16px;
+  background-color: var(--color-border);
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+/* 🔗 Show title link */
+.favorites-group__show-title {
+  color: var(--color-text-dark);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.favorites-group__show-title:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+/* ➡️ Arrow between show and season titles */
+.favorites-group__separator {
+  margin: 0 8px;
+  color: var(--color-text-light);
+}
+
+/* 🔗 Season title link */
+.favorites-group__season-title {
+  color: var(--color-text-medium);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.favorites-group__season-title:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+/* 📃 List of favorite episodes under each group */
+.favorites-group__episodes {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 🎧 Individual favorite item row */
+.favorite-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+  transition: background-color 0.3s ease;
+}
+
+.favorite-item:last-child {
+  border-bottom: none;
+}
+
+/* ✅ Highlight styling for completed episodes */
+.favorite-item--completed {
+  background-color: var(--color-background);
+}
+
+/* ✅ Add checkmark to title of completed episode */
+.favorite-item--completed .favorite-item__title::after {
+  content: "✓";
+  display: inline-block;
+  margin-left: 8px;
+  color: var(--color-success);
+  font-weight: bold;
+}
+
+/* 📄 Episode title and meta container */
+.favorite-item__content {
+  flex-grow: 1;
+}
+
+/* 🏷️ Episode title */
+.favorite-item__title {
+  font-weight: 500;
+  color: var(--color-text-dark);
+  margin-bottom: 4px;
+}
+
+/* 🕒 Added date */
+.favorite-item__meta {
+  font-size: 0.85rem;
+  color: var(--color-text-light);
+}
+
+/* 🎮 Action buttons container (play + remove) */
+.favorite-item__actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* 🎯 Shared button styles */
+.favorite-item__play-btn,
+.favorite-item__remove-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background-color: var(--color-border);
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+/* 🔁 Button hover effect */
+.favorite-item__play-btn:hover,
+.favorite-item__remove-btn:hover {
+  background-color: var(--color-border);
+  transform: scale(1.05);
+}
+
+/* ▶️ Play button color */
+.favorite-item__play-btn {
+  color: var(--color-primary);
+}
+
+/* ❌ Remove button color */
+.favorite-item__remove-btn {
+  color: #ef4444;
+}
+
+/* 📱 Responsive layout for mobile */
+@media (max-width: 576px) {
+  .favorite-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .favorite-item__actions {
+    align-self: flex-end;
+  }
+}
