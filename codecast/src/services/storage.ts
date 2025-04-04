@@ -2,60 +2,118 @@
 
 import { FavoriteEpisode, ListenedEpisode } from '../types';
 
+/**
+ * Keys used in localStorage for persistence.
+ */
 const FAVORITES_KEY = 'codecast_favorites';
 const LISTENED_KEY = 'codecast_listened';
+const PROGRESS_KEY = 'codecast_progress';
 
 /**
- * Saves the given list of favorite episodes to localStorage.
- *
- * @param {FavoriteEpisode[]} favorites - Array of favorite episodes to be saved.
+ * Interface for tracking playback progress of an episode.
+ */
+export interface EpisodeProgress {
+  showId: string;
+  seasonNumber: number;
+  episodeNumber: number;
+  timestamp: number;
+  duration: number;
+  lastUpdated: string; // ISO 8601 format
+}
+
+/**
+ * Persist an array of favorite episodes to localStorage.
+ * 
+ * @param favorites - List of episodes the user marked as favorite
  */
 export const saveFavorites = (favorites: FavoriteEpisode[]): void => {
-  localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+  try {
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+  } catch (error) {
+    console.error('Failed to save favorites:', error);
+  }
 };
 
 /**
- * Loads the list of favorite episodes from localStorage.
+ * Load user's favorite episodes from localStorage.
  *
- * @returns {FavoriteEpisode[]} Array of favorite episodes, or an empty array if none found or parsing fails.
+ * @returns Array of favorite episodes or empty array if none exist
  */
 export const loadFavorites = (): FavoriteEpisode[] => {
   try {
-    const storedFavorites = localStorage.getItem(FAVORITES_KEY);
-    return storedFavorites ? JSON.parse(storedFavorites) : [];
+    const stored = localStorage.getItem(FAVORITES_KEY);
+    return stored ? JSON.parse(stored) : [];
   } catch (error) {
-    console.error('Error loading favorites from localStorage:', error);
+    console.error('Failed to load favorites from storage:', error);
     return [];
   }
 };
 
 /**
- * Saves the given list of listened episodes to localStorage.
- *
- * @param {ListenedEpisode[]} listened - Array of listened episodes to be saved.
+ * Persist listened episodes (fully played) to localStorage.
+ * 
+ * @param listened - Episodes the user completed
  */
 export const saveListened = (listened: ListenedEpisode[]): void => {
-  localStorage.setItem(LISTENED_KEY, JSON.stringify(listened));
+  try {
+    localStorage.setItem(LISTENED_KEY, JSON.stringify(listened));
+  } catch (error) {
+    console.error('Failed to save listened episodes:', error);
+  }
 };
 
 /**
- * Loads the list of listened episodes from localStorage.
+ * Load the list of completed episodes from localStorage.
  *
- * @returns {ListenedEpisode[]} Array of listened episodes, or an empty array if none found or parsing fails.
+ * @returns Array of listened episodes or empty array
  */
 export const loadListened = (): ListenedEpisode[] => {
   try {
-    const storedListened = localStorage.getItem(LISTENED_KEY);
-    return storedListened ? JSON.parse(storedListened) : [];
+    const stored = localStorage.getItem(LISTENED_KEY);
+    return stored ? JSON.parse(stored) : [];
   } catch (error) {
-    console.error('Error loading listened episodes from localStorage:', error);
+    console.error('Failed to load listened episodes:', error);
     return [];
   }
 };
 
 /**
- * Clears all listened episode history from localStorage.
+ * Removes all user listening history and episode progress data.
+ * Useful for reset functionality or sign-out cleanup.
  */
 export const clearListeningHistory = (): void => {
-  localStorage.removeItem(LISTENED_KEY);
+  try {
+    localStorage.removeItem(LISTENED_KEY);
+    localStorage.removeItem(PROGRESS_KEY);
+  } catch (error) {
+    console.error('Failed to clear listening history:', error);
+  }
+};
+
+/**
+ * Persist playback progress data for episodes.
+ * 
+ * @param progress - Array of episode progress objects
+ */
+export const saveProgress = (progress: EpisodeProgress[]): void => {
+  try {
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+  } catch (error) {
+    console.error('Failed to save episode progress:', error);
+  }
+};
+
+/**
+ * Load playback progress data from localStorage.
+ * 
+ * @returns An array of progress entries or empty array if none found
+ */
+export const loadProgress = (): EpisodeProgress[] => {
+  try {
+    const stored = localStorage.getItem(PROGRESS_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error('Failed to load episode progress:', error);
+    return [];
+  }
 };

@@ -1,0 +1,374 @@
+/* ----------------------------------------
+   Global Page Layout
+---------------------------------------- */
+
+.page {
+  padding-bottom: 32px; /* Prevents content from touching bottom edge */
+}
+
+.page__header {
+  margin-bottom: 32px;
+}
+
+.page__title {
+  font-size: 2rem;
+  margin: 0 0 16px 0;
+  color: #111827;
+}
+
+/* Search + Filters block (stacked on mobile, row on desktop) */
+.page__search-and-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .page__search-and-filters {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+}
+
+/* ----------------------------------------
+   Navigation & Back Links
+---------------------------------------- */
+
+.page__back-link {
+  display: inline-block;
+  margin-bottom: 24px;
+  color: #4b5563;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.page__back-link:hover {
+  color: #4338ca;
+}
+
+/* ----------------------------------------
+   Error / Empty / Retry States
+---------------------------------------- */
+
+.page__error {
+  background-color: #fee2e2;
+  border-radius: 8px;
+  padding: 24px;
+  margin: 32px 0;
+  color: #b91c1c;
+  text-align: center;
+}
+
+.page__empty {
+  background-color: #f3f4f6;
+  border-radius: 8px;
+  padding: 32px;
+  text-align: center;
+  color: #4b5563;
+}
+
+/* Action Buttons (Retry, Reset, Back) */
+.page__retry-btn,
+.page__reset-btn,
+.page__back-btn {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+/* Specific button color styles */
+.page__retry-btn {
+  background-color: #b91c1c;
+  color: white;
+  border: none;
+}
+
+.page__retry-btn:hover {
+  background-color: #991b1b;
+}
+
+.page__reset-btn {
+  background-color: #4b5563;
+  color: white;
+  border: none;
+}
+
+.page__reset-btn:hover {
+  background-color: #374151;
+}
+
+.page__back-btn {
+  background-color: #4338ca;
+  color: white;
+  border: none;
+}
+
+.page__back-btn:hover {
+  background-color: #4f46e5;
+}
+
+/* ----------------------------------------
+   Show Grid for Home Page
+---------------------------------------- */
+
+.show-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 32px;
+}
+
+/* ----------------------------------------
+   Show Details Header
+---------------------------------------- */
+
+.show-header {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 32px;
+}
+
+.show-header__image-container {
+  flex: 0 0 300px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.show-header__image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.show-header__content {
+  flex: 1;
+}
+
+.show-header__title {
+  font-size: 2.25rem;
+  margin: 0 0 16px 0;
+  color: #111827;
+}
+
+.show-header__genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.show-header__genre {
+  background-color: #e5e7eb;
+  color: #4b5563;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.show-header__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.show-header__separator {
+  font-size: 0.75rem;
+}
+
+.show-header__description {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #4b5563;
+}
+
+/* ----------------------------------------
+   Season Details Header
+---------------------------------------- */
+
+.season-header {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 32px;
+}
+
+.season-header__image-container {
+  flex: 0 0 240px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.season-header__image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.season-header__content {
+  flex: 1;
+}
+
+.season-header__title {
+  font-size: 2rem;
+  margin: 0 0 8px 0;
+  color: #111827;
+}
+
+.season-header__show-title {
+  font-size: 1.25rem;
+  color: #4b5563;
+  margin-bottom: 16px;
+}
+
+.season-header__meta {
+  margin-bottom: 24px;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+/* Season Selector Buttons */
+.season-selector {
+  margin-top: 24px;
+}
+
+.season-selector__label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.season-selector__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.season-selector__button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #f3f4f6;
+  color: #4b5563;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.season-selector__button:hover {
+  background-color: #e5e7eb;
+  color: #111827;
+}
+
+.season-selector__button--active {
+  background-color: #4338ca;
+  color: white;
+}
+
+/* ----------------------------------------
+   404 Page Styling
+---------------------------------------- */
+
+.not-found {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+}
+
+.not-found__content {
+  max-width: 500px;
+}
+
+.not-found__title {
+  font-size: 8rem;
+  margin: 0;
+  line-height: 1;
+  color: #4338ca;
+  font-weight: 700;
+}
+
+.not-found__subtitle {
+  font-size: 2rem;
+  margin: 0 0 16px 0;
+  color: #111827;
+}
+
+.not-found__message {
+  margin-bottom: 32px;
+  color: #6b7280;
+}
+
+.not-found__home-btn {
+  display: inline-block;
+  padding: 12px 24px;
+  background-color: #4338ca;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.not-found__home-btn:hover {
+  background-color: #4f46e5;
+}
+
+/* ----------------------------------------
+   Responsive Layout Adjustments
+---------------------------------------- */
+
+@media (max-width: 768px) {
+  .show-header,
+  .season-header {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .show-header__image-container {
+    max-width: 100%;
+    flex: 0 0 auto;
+  }
+
+  .season-header__image-container {
+    max-width: 240px;
+    flex: 0 0 auto;
+  }
+}
+
+@media (max-width: 576px) {
+  .page__title {
+    font-size: 1.75rem;
+  }
+
+  .show-header__title {
+    font-size: 1.75rem;
+  }
+
+  .season-header__title {
+    font-size: 1.5rem;
+  }
+
+  .not-found__title {
+    font-size: 6rem;
+  }
+
+  .not-found__subtitle {
+    font-size: 1.5rem;
+  }
+}
