@@ -13,7 +13,7 @@ import {
 } from '../services/storage';
 
 /**
- * Zustand store state for managing favorite episodes.
+ * 🧠 Zustand state slice for managing user's favorite episodes.
  */
 interface FavoritesState {
   favorites: FavoriteEpisode[];
@@ -21,7 +21,7 @@ interface FavoritesState {
 }
 
 /**
- * Store actions for interacting with the favorites state.
+ * ✋ Actions for manipulating favorite episodes.
  */
 interface FavoritesActions {
   addFavorite: (
@@ -38,6 +38,8 @@ interface FavoritesActions {
     episodeNumber: number
   ) => void;
 
+  clearAllFavorites: () => void;
+
   setSortOption: (option: FavoriteSortOption) => void;
 
   isFavorite: (
@@ -48,7 +50,7 @@ interface FavoritesActions {
 }
 
 /**
- * Initial state, loading persisted favorites from localStorage.
+ * 📦 Initial state loaded from localStorage
  */
 const initialState: FavoritesState = {
   favorites: loadFavorites(),
@@ -56,14 +58,16 @@ const initialState: FavoritesState = {
 };
 
 /**
- * Zustand store for managing user's favorite podcast episodes.
+ * ✅ Zustand store for favorites, with Immer for immutable logic.
+ * Includes full add/remove/sort functionality with persistent storage.
  */
 export const useFavoritesStore = create<FavoritesState & FavoritesActions>()(
   immer((set, get) => ({
     ...initialState,
 
     /**
-     * Adds a new episode to favorites if it doesn't already exist.
+     * ➕ Adds an episode to favorites if not already added.
+     * Episodes are stored with show and season context.
      */
     addFavorite: (
       showId,
@@ -99,7 +103,7 @@ export const useFavoritesStore = create<FavoritesState & FavoritesActions>()(
     },
 
     /**
-     * Removes an episode from favorites.
+     * ❌ Removes a single favorite episode by identity.
      */
     removeFavorite: (showId, seasonNumber, episodeNumber) => {
       set(state => {
@@ -117,7 +121,17 @@ export const useFavoritesStore = create<FavoritesState & FavoritesActions>()(
     },
 
     /**
-     * Sets the current sort option and re-sorts the favorites list.
+     * 🧹 Clears all favorite episodes from state and storage.
+     */
+    clearAllFavorites: () => {
+      set(state => {
+        state.favorites = [];
+        saveFavorites([]);
+      });
+    },
+
+    /**
+     * 🔀 Updates current sorting preference and reorders the list.
      */
     setSortOption: (option) => {
       set(state => {
@@ -127,7 +141,7 @@ export const useFavoritesStore = create<FavoritesState & FavoritesActions>()(
     },
 
     /**
-     * Checks if a specific episode is marked as a favorite.
+     * ✅ Returns whether a given episode is in the favorites list.
      */
     isFavorite: (showId, seasonNumber, episodeNumber) => {
       return get().favorites.some(
@@ -141,11 +155,7 @@ export const useFavoritesStore = create<FavoritesState & FavoritesActions>()(
 );
 
 /**
- * Sorts favorite episodes based on the selected sort option.
- *
- * @param favorites - List of favorite episodes
- * @param option - Sorting preference
- * @returns Sorted list of favorites
+ * 📊 Utility to sort favorites based on selected strategy.
  */
 const sortFavorites = (
   favorites: FavoriteEpisode[],

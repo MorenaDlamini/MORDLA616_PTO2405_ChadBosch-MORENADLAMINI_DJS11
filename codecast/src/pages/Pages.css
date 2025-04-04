@@ -1,9 +1,10 @@
 /* ----------------------------------------
-   Global Page Layout
+   🌐 Global Page Layout
+   Base spacing and section structure
 ---------------------------------------- */
 
 .page {
-  padding-bottom: 32px; /* Prevents content from touching bottom edge */
+  padding-bottom: 32px; /* Ensures page content doesn't run into sticky audio player */
 }
 
 .page__header {
@@ -12,11 +13,47 @@
 
 .page__title {
   font-size: 2rem;
-  margin: 0 0 16px 0;
-  color: #111827;
+  margin: 0 0 16px;
+  color: #111827; /* Dark text for visibility */
 }
 
-/* Search + Filters block (stacked on mobile, row on desktop) */
+/* 🎛️ Container for filters and delete actions (column on mobile, row on desktop) */
+.page__header-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+@media (min-width: 768px) {
+  .page__header-actions {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+/* 🧹 "Delete All" button styling for actions like clear history */
+.page__delete-all-btn {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.page__delete-all-btn:hover {
+  background-color: #dc2626;
+}
+
+.page__delete-all-btn:active {
+  transform: scale(0.98);
+}
+
+/* 🔍 Filter + Search alignment */
 .page__search-and-filters {
   display: flex;
   flex-direction: column;
@@ -32,7 +69,7 @@
 }
 
 /* ----------------------------------------
-   Navigation & Back Links
+   🔙 Navigation & Back Links
 ---------------------------------------- */
 
 .page__back-link {
@@ -49,7 +86,7 @@
 }
 
 /* ----------------------------------------
-   Error / Empty / Retry States
+   🚨 Error / 🕳️ Empty / 🔁 Retry States
 ---------------------------------------- */
 
 .page__error {
@@ -69,7 +106,7 @@
   color: #4b5563;
 }
 
-/* Action Buttons (Retry, Reset, Back) */
+/* 🎯 Utility buttons for retry/reset/back */
 .page__retry-btn,
 .page__reset-btn,
 .page__back-btn {
@@ -83,7 +120,7 @@
   cursor: pointer;
 }
 
-/* Specific button color styles */
+/* Retry = Red */
 .page__retry-btn {
   background-color: #b91c1c;
   color: white;
@@ -94,6 +131,7 @@
   background-color: #991b1b;
 }
 
+/* Reset = Slate */
 .page__reset-btn {
   background-color: #4b5563;
   color: white;
@@ -104,6 +142,7 @@
   background-color: #374151;
 }
 
+/* Back = Indigo */
 .page__back-btn {
   background-color: #4338ca;
   color: white;
@@ -115,7 +154,7 @@
 }
 
 /* ----------------------------------------
-   Show Grid for Home Page
+   🧱 Show Grid (Used in Home Page)
 ---------------------------------------- */
 
 .show-grid {
@@ -125,7 +164,7 @@
 }
 
 /* ----------------------------------------
-   Show Details Header
+   📺 Show Detail Header
 ---------------------------------------- */
 
 .show-header {
@@ -153,7 +192,7 @@
 
 .show-header__title {
   font-size: 2.25rem;
-  margin: 0 0 16px 0;
+  margin: 0 0 16px;
   color: #111827;
 }
 
@@ -193,7 +232,7 @@
 }
 
 /* ----------------------------------------
-   Season Details Header
+   🎬 Season Detail Layout
 ---------------------------------------- */
 
 .season-header {
@@ -221,7 +260,7 @@
 
 .season-header__title {
   font-size: 2rem;
-  margin: 0 0 8px 0;
+  margin: 0 0 8px;
   color: #111827;
 }
 
@@ -237,7 +276,7 @@
   font-size: 0.9rem;
 }
 
-/* Season Selector Buttons */
+/* 🎚️ Season selection buttons (e.g. S1, S2...) */
 .season-selector {
   margin-top: 24px;
 }
@@ -280,7 +319,7 @@
 }
 
 /* ----------------------------------------
-   404 Page Styling
+   🧭 Not Found (404) Page
 ---------------------------------------- */
 
 .not-found {
@@ -305,7 +344,7 @@
 
 .not-found__subtitle {
   font-size: 2rem;
-  margin: 0 0 16px 0;
+  margin: 0 0 16px;
   color: #111827;
 }
 
@@ -330,7 +369,7 @@
 }
 
 /* ----------------------------------------
-   Responsive Layout Adjustments
+   📱 Responsive Layout Adjustments
 ---------------------------------------- */
 
 @media (max-width: 768px) {
