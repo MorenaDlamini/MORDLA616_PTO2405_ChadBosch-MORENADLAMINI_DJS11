@@ -126,10 +126,10 @@
   font-weight: 500;
 }
 
-/* Right-aligned button group (play + favorite) */
+/* Right-aligned button group (play + favorite + queue) */
 .episode-item__actions {
   display: flex;
-  gap: 8px;
+  gap: 6px; /* Reduced gap to fit 3 buttons */
   margin-left: 16px;
   align-self: center;
   flex-shrink: 0;
@@ -137,6 +137,7 @@
 
 /* Shared styling for round icon buttons */
 .episode-item__favorite-btn,
+.episode-item__queue-btn,
 .episode-item__play-btn {
   display: flex;
   align-items: center;
@@ -150,11 +151,23 @@
   transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
-/* Hover effect for both buttons – subtle scale and background tint */
+/* Hover effect for all buttons – subtle scale and background tint */
 .episode-item__favorite-btn:hover,
+.episode-item__queue-btn:hover,
 .episode-item__play-btn:hover {
   background-color: var(--color-border);
   transform: scale(1.05);
+}
+
+/* Style for the queue button (similar to other buttons) */
+.episode-item__queue-btn {
+  color: var(--color-primary);
+}
+
+/* Add queue icon styles (matches other icons) */
+.episode-item__queue-icon {
+  width: 18px;
+  height: 18px;
 }
 
 /* Heart icon coloring */
@@ -171,4 +184,18 @@
 .episode-item--playing .episode-item__play-btn {
   background-color: var(--color-primary);
   color: white;
+}
+
+/* Update existing buttons to be slightly smaller on mobile if needed */
+@media (max-width: 576px) {
+  .episode-item__favorite-btn,
+  .episode-item__queue-btn,
+  .episode-item__play-btn {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .episode-item__actions {
+    gap: 4px;
+  }
 }

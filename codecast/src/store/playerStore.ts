@@ -1,536 +1,529 @@
 // src/store/playerStore.ts
 
 import { create } from 'zustand';
-import { immer } from 'zustand/middleware/immer';
-import { Episode, ListenedEpisode } from '../types';
-import {
-  loadListened,
-  saveListened,
-  clearListeningHistory,
-  loadProgress,
-  saveProgress,
-  EpisodeProgress as StoredEpisodeProgress, // Renamed to clarify its purpose
-} from '../services/storage';
+import { Episode } from '../types';
 
 /**
- * Represents the saved progress of a specific episode.
+ * PlayerEpisode extends Episode by including show and season context.
  */
-interface EpisodeProgress {
+export interface PlayerEpisode {
   showId: string;
+  showTitle: string;
   seasonNumber: number;
-  episodeNumber: number;
-  timestamp: number; // Current playback position in seconds
-  duration: number;  // Total duration of the episode in seconds
-  lastUpdated: string; // ISO timestamp of when progress was last saved
+  seasonTitle: string;
+  episode: Episode;
 }
 
 /**
- * Tracks detailed listening analytics
- */
-interface ListeningSession {
-  showId: string;
-  episodeId: number;
-  startTime: string; // ISO timestamp
-  duration: number;  // seconds listened
-  completed: boolean;
-}
-
-/**
- * Zustand store state for the audio player.
+ * Zustand store state and action interface for the audio player.
  */
 interface PlayerState {
+  // Playback state
   isPlaying: boolean;
-  currentEpisode: {
-    showId: string;
-    showTitle: string;
-    seasonNumber: number;
-    seasonTitle: string;
-    episode: Episode;
-  } | null;
+  currentEpisode: PlayerEpisode | null;
   currentTime: number;
   duration: number;
   volume: number;
-  previousVolume: number; // Add this to store previous volume for mute toggle
-  isMuted: boolean; // Add this to track mute state
-  playbackRate: number; // Track playback speed
-  playlist: {
-    showId: string;
-    showTitle: string;
-    seasonNumber: number;
-    seasonTitle: string;
-    episode: Episode;
-  }[]; // Add this to handle next episode functionality
-  currentEpisodeIndex: number; // Track current position in playlist
-  listenedEpisodes: ListenedEpisode[];
-  episodeProgress: EpisodeProgress[]; // Track progress for episodes
-  listeningHistory: ListeningSession[]; // Analytics for listening behavior
-  sleepTimer: number | null; // Timestamp when playback should stop
-}
+  isMuted: number;
+  playbackRate: number;
+  sleepTimer: number | null;
 
-/**
- * All available actions for the player store.
- */
-interface PlayerActions {
+  // Playlist management
+  playlist: PlayerEpisode[];
+  currentEpisodeIndex: number | null;
+
+  // History and progress tracking
+  completedEpisodes: Record<string, boolean>;
+  episodeProgress: Record<string, number>;
+
+  // Core player actions
+  togglePlayPause: () => void;
+
+  // Playlist actions
   playEpisode: (
     showId: string,
     showTitle: string,
     seasonNumber: number,
     seasonTitle: string,
-    episode: Episode,
-    episodes?: Episode[] // Optional array of all episodes for playlist
+    episode: Episode
   ) => void;
-  togglePlayPause: () => void;
+  addToPlaylist: (
+    showId: string,
+    showTitle: string,
+    seasonNumber: number,
+    seasonTitle: string,
+    episode: Episode
+  ) => void;
+  removeFromPlaylist: (index: number) => void;
+  moveInPlaylist: (fromIndex: number, toIndex: number) => void;
+  clearPlaylist: () => void;
+  skipToNext: () => void;
+  skipToPrevious: () => void;
+
+  // Playback manipulation
   setCurrentTime: (time: number) => void;
   setDuration: (duration: number) => void;
+  skipForward: (seconds: number) => void;
+  skipBackward: (seconds: number) => void;
   setVolume: (volume: number) => void;
-  toggleMute: () => void; // Add mute toggle function
-  setPlaybackRate: (rate: number) => void; // Control playback speed
-  skipToNext: () => void; // Add skip to next episode function
-  skipToPrevious: () => void; // Add skip to previous episode function
-  skipForward: (seconds: number) => void; // Skip forward by n seconds
-  skipBackward: (seconds: number) => void; // Skip backward by n seconds
+  toggleMute: () => void;
+  setPlaybackRate: (rate: number) => void;
+  setSleepTimer: (minutes: number | null) => void;
+
+  // Progress tracking
   markAsCompleted: () => void;
-  isCompleted: (showId: string, seasonNumber: number, episodeNumber: number) => boolean;
-  resetListeningHistory: () => void;
   saveProgress: () => void;
-  getEpisodeProgress: (showId: string, seasonNumber: number, episodeNumber: number) => number | null;
-  clearPlaylist: () => void;
-  moveInPlaylist: (fromIndex: number, toIndex: number) => void;
-  removeFromPlaylist: (index: number) => void;
-  setSleepTimer: (minutes: number | null) => void; // Set sleep timer in minutes
-  recordListeningSession: () => void; // Record analytics data
+  isCompleted: (
+    showId: string,
+    seasonNumber: number,
+    episodeNumber: number
+  ) => boolean;
+  getEpisodeProgress: (
+    showId: string,
+    seasonNumber: number,
+    episodeNumber: number
+  ) => number | null;
+  resetShowState: () => void;
 }
 
-// Load listening analytics from localStorage
-const loadListeningHistory = (): ListeningSession[] => {
+/**
+ * Builds a unique key to track individual episode completion and progress.
+ *
+ * @param showId - The show identifier
+ * @param seasonNumber - Season number
+ * @param episodeNumber - Episode number
+ * @returns Unique episode key string
+ */
+const getEpisodeKey = (
+  showId: string,
+  seasonNumber: number,
+  episodeNumber: number
+): string => {
+  return `${showId}_s${seasonNumber}_e${episodeNumber}`;
+};
+
+/**
+ * Loads persisted playback state from localStorage.
+ * Falls back to defaults on failure.
+ */
+const loadSavedState = () => {
   try {
-    const data = localStorage.getItem('listeningHistory');
-    return data ? JSON.parse(data) : [];
+    const savedVolume = localStorage.getItem('codecast_volume');
+    const savedRate = localStorage.getItem('codecast_playback_rate');
+    const savedCompleted = localStorage.getItem('codecast_completed_episodes');
+    const savedProgress = localStorage.getItem('codecast_episode_progress');
+
+    return {
+      volume: savedVolume ? parseFloat(savedVolume) : 0.8,
+      playbackRate: savedRate ? parseFloat(savedRate) : 1.0,
+      completedEpisodes: savedCompleted ? JSON.parse(savedCompleted) : {},
+      episodeProgress: savedProgress ? JSON.parse(savedProgress) : {}
+    };
   } catch (error) {
-    console.error('Error loading listening history:', error);
-    return [];
+    console.error('Error loading saved player state:', error);
+    return {
+      volume: 0.8,
+      playbackRate: 1.0,
+      completedEpisodes: {},
+      episodeProgress: {}
+    };
   }
 };
 
-// Initial state loaded from localStorage
-const initialState: PlayerState = {
+const savedState = loadSavedState();
+
+/**
+ * Zustand store that manages audio playback state and controls.
+ */
+export const usePlayerStore = create<PlayerState>((set, get) => ({
   isPlaying: false,
   currentEpisode: null,
   currentTime: 0,
   duration: 0,
-  volume: 0.75,
-  previousVolume: 0.75, // Initialize same as volume
-  isMuted: false,
-  playbackRate: 1.0,
+  volume: savedState.volume,
+  isMuted: 0,
+  playbackRate: savedState.playbackRate,
   playlist: [],
-  currentEpisodeIndex: -1,
-  listenedEpisodes: loadListened(),
-  episodeProgress: loadProgress() as EpisodeProgress[], // Properly cast from StoredEpisodeProgress
-  listeningHistory: loadListeningHistory(),
+  currentEpisodeIndex: null,
+  completedEpisodes: savedState.completedEpisodes,
+  episodeProgress: savedState.episodeProgress,
   sleepTimer: null,
-};
 
-export const usePlayerStore = create<PlayerState & PlayerActions>()(
-  immer((set, get) => ({
-    ...initialState,
+  /**
+   * Toggles between play and pause state.
+   */
+  togglePlayPause: () => {
+    set(state => ({
+      isPlaying: !state.isPlaying
+    }));
+  },
 
-    /**
-     * Starts playing a specific episode and restores saved progress if available.
-     */
-    playEpisode: (
-      showId,
-      showTitle,
-      seasonNumber,
-      seasonTitle,
-      episode,
-      episodes
-    ) => {
-      set(state => {
-        state.currentEpisode = { showId, showTitle, seasonNumber, seasonTitle, episode };
-        state.isPlaying = true;
+  /**
+   * Starts playback of a selected episode and resumes progress if available.
+   */
+  playEpisode: (showId, showTitle, seasonNumber, seasonTitle, episode) => {
+    const state = get();
+    const episodeItem = { showId, showTitle, seasonNumber, seasonTitle, episode };
 
-        const savedProgress = state.episodeProgress.find(
-          prog =>
-            prog.showId === showId &&
-            prog.seasonNumber === seasonNumber &&
-            prog.episodeNumber === episode.episode
-        );
+    const existingIndex = state.playlist.findIndex(
+      item =>
+        item.showId === showId &&
+        item.seasonNumber === seasonNumber &&
+        item.episode.episode === episode.episode
+    );
 
-        state.currentTime = savedProgress?.timestamp ?? 0;
-        
-        // If episodes array is provided, set up the playlist
-        if (episodes && episodes.length > 0) {
-          state.playlist = episodes.map(ep => ({
-            showId,
-            showTitle,
-            seasonNumber,
-            seasonTitle,
-            episode: ep
-          }));
-          
-          // Find the current episode index in the playlist
-          state.currentEpisodeIndex = episodes.findIndex(
-            ep => ep.episode === episode.episode
-          );
-        }
-      });
-    },
+    const newPlaylist = [...state.playlist];
+    const newIndex = existingIndex >= 0 ? existingIndex : newPlaylist.push(episodeItem) - 1;
 
-    /**
-     * Toggles between play and pause states.
-     */
-    togglePlayPause: () => {
-      set(state => {
-        state.isPlaying = !state.isPlaying;
-      });
-    },
+    set({
+      currentEpisode: episodeItem,
+      currentEpisodeIndex: newIndex,
+      playlist: newPlaylist,
+      isPlaying: true,
+      currentTime: 0
+    });
 
-    /**
-     * Updates the current playback time.
-     */
-    setCurrentTime: (time) => {
-      set(state => {
-        state.currentTime = time;
-      });
-    },
-
-    /**
-     * Updates the current episode's total duration.
-     */
-    setDuration: (duration) => {
-      set(state => {
-        state.duration = duration;
-      });
-    },
-
-    /**
-     * Sets the player volume (range: 0 to 1).
-     */
-    setVolume: (volume) => {
-      set(state => {
-        state.volume = volume;
-        // If we're manually changing volume, we're no longer muted
-        if (volume > 0) {
-          state.isMuted = false;
-        } else if (volume === 0) {
-          state.isMuted = true;
-        }
-        // Store the volume value for unmute
-        if (volume > 0) {
-          state.previousVolume = volume;
-        }
-      });
-    },
-
-    /**
-     * Toggle mute/unmute the audio
-     */
-    toggleMute: () => {
-      set(state => {
-        if (state.isMuted) {
-          // Unmute: restore previous volume
-          state.volume = state.previousVolume;
-          state.isMuted = false;
-        } else {
-          // Mute: store current volume and set to 0
-          state.previousVolume = state.volume > 0 ? state.volume : 0.75; // Default to 0.75 if already at 0
-          state.volume = 0;
-          state.isMuted = true;
-        }
-      });
-    },
-
-    /**
-     * Sets the playback rate (speed)
-     */
-    setPlaybackRate: (rate) => {
-      set(state => {
-        state.playbackRate = rate;
-      });
-    },
-
-    /**
-     * Skip to the next episode in the playlist
-     */
-    skipToNext: () => {
-      const { playlist, currentEpisodeIndex } = get();
-      
-      if (playlist.length === 0 || currentEpisodeIndex === -1) return;
-      
-      // Check if there is a next episode
-      if (currentEpisodeIndex < playlist.length - 1) {
-        const nextEpisode = playlist[currentEpisodeIndex + 1];
-        
-        set(state => {
-          state.currentEpisode = nextEpisode;
-          state.currentEpisodeIndex = currentEpisodeIndex + 1;
-          state.currentTime = 0;
-          state.isPlaying = true;
-        });
+    const savedProgress = state.getEpisodeProgress(showId, seasonNumber, episode.episode);
+    if (savedProgress && savedProgress > 0) {
+      set({ currentTime: savedProgress });
+      const audioElement = document.querySelector('audio');
+      if (audioElement) {
+        audioElement.currentTime = savedProgress;
       }
-    },
+    }
+  },
 
-    /**
-     * Skip to the previous episode in the playlist
-     */
-    skipToPrevious: () => {
-      const { playlist, currentEpisodeIndex, currentTime } = get();
-      
-      if (playlist.length === 0 || currentEpisodeIndex === -1) return;
-      
-      // If we're more than 3 seconds into the current episode, go back to the beginning
-      if (currentTime > 3) {
-        set(state => {
-          state.currentTime = 0;
-        });
-      } 
-      // Otherwise go to previous episode if available
-      else if (currentEpisodeIndex > 0) {
-        const prevEpisode = playlist[currentEpisodeIndex - 1];
-        
-        set(state => {
-          state.currentEpisode = prevEpisode;
-          state.currentEpisodeIndex = currentEpisodeIndex - 1;
-          state.currentTime = 0;
-          state.isPlaying = true;
-        });
-      }
-    },
+  /**
+   * Appends an episode to the playlist if not already added.
+   */
+  addToPlaylist: (showId, showTitle, seasonNumber, seasonTitle, episode) => {
+    const state = get();
+    const newItem = { showId, showTitle, seasonNumber, seasonTitle, episode };
 
-    /**
-     * Skip forward by specified number of seconds
-     */
-    skipForward: (seconds) => {
-      const { currentTime, duration } = get();
-      const newTime = Math.min(duration, currentTime + seconds);
-      
-      set(state => {
-        state.currentTime = newTime;
-      });
-    },
+    const isAlreadyInPlaylist = state.playlist.some(
+      item =>
+        item.showId === showId &&
+        item.seasonNumber === seasonNumber &&
+        item.episode.episode === episode.episode
+    );
 
-    /**
-     * Skip backward by specified number of seconds
-     */
-    skipBackward: (seconds) => {
-      const { currentTime } = get();
-      const newTime = Math.max(0, currentTime - seconds);
-      
-      set(state => {
-        state.currentTime = newTime;
-      });
-    },
+    if (isAlreadyInPlaylist) return;
 
-    /**
-     * Saves the current progress of the playing episode to localStorage.
-     */
-    saveProgress: () => {
-      const { currentEpisode, currentTime, duration } = get();
-      if (!currentEpisode || currentTime <= 0 || duration <= 0) return;
+    set({ playlist: [...state.playlist, newItem] });
 
-      set(state => {
-        const { showId, seasonNumber, episode } = currentEpisode;
-        const episodeNumber = episode.episode;
+    if (state.playlist.length === 0) {
+      set({ currentEpisodeIndex: 0 });
+    }
 
-        const existingIndex = state.episodeProgress.findIndex(
-          prog =>
-            prog.showId === showId &&
-            prog.seasonNumber === seasonNumber &&
-            prog.episodeNumber === episodeNumber
-        );
+    alert(`Added "${episode.title}" to queue`);
+  },
 
-        const progressUpdate: EpisodeProgress = {
-          showId,
-          seasonNumber,
-          episodeNumber,
-          timestamp: currentTime,
-          duration,
-          lastUpdated: new Date().toISOString(),
-        };
+  /**
+   * Removes an episode from the playlist and adjusts current index.
+   */
+  removeFromPlaylist: index => {
+    const state = get();
+    const currentIndex = state.currentEpisodeIndex;
+    const newPlaylist = state.playlist.filter((_, i) => i !== index);
+    let newCurrentIndex = currentIndex;
 
-        if (existingIndex >= 0) {
-          state.episodeProgress[existingIndex] = progressUpdate;
-        } else {
-          state.episodeProgress.push(progressUpdate);
-        }
-
-        saveProgress(state.episodeProgress as StoredEpisodeProgress[]); // Cast to match the storage service type
-      });
-    },
-
-    /**
-     * Retrieves previously saved progress for a given episode.
-     *
-     * @returns The timestamp in seconds or null if not found
-     */
-    getEpisodeProgress: (showId, seasonNumber, episodeNumber) => {
-      const { episodeProgress } = get();
-      const progress = episodeProgress.find(
-        prog =>
-          prog.showId === showId &&
-          prog.seasonNumber === seasonNumber &&
-          prog.episodeNumber === episodeNumber
-      );
-
-      return progress?.timestamp ?? null;
-    },
-
-    /**
-     * Marks the current episode as completed and stores it persistently.
-     */
-    markAsCompleted: () => {
-      const { currentEpisode } = get();
-      if (!currentEpisode) return;
-
-      set(state => {
-        const { showId, seasonNumber, episode } = currentEpisode;
-        const episodeNumber = episode.episode;
-
-        const alreadyCompleted = state.listenedEpisodes.some(
-          ep =>
-            ep.showId === showId &&
-            ep.seasonNumber === seasonNumber &&
-            ep.episodeNumber === episodeNumber
-        );
-
-        if (!alreadyCompleted) {
-          state.listenedEpisodes.push({
-            showId,
-            seasonNumber,
-            episodeNumber,
-            completedAt: new Date().toISOString(),
+    if (currentIndex !== null) {
+      if (index === currentIndex) {
+        if (newPlaylist.length === 0) {
+          set({
+            playlist: newPlaylist,
+            currentEpisodeIndex: null,
+            currentEpisode: null,
+            isPlaying: false
           });
-
-          saveListened(state.listenedEpisodes);
+          return;
+        } else if (index < newPlaylist.length) {
+          set({
+            playlist: newPlaylist,
+            currentEpisodeIndex: newCurrentIndex,
+            currentEpisode: newPlaylist[newCurrentIndex]
+          });
+          return;
+        } else {
+          newCurrentIndex = newPlaylist.length - 1;
+          set({
+            playlist: newPlaylist,
+            currentEpisodeIndex: newCurrentIndex,
+            currentEpisode: newPlaylist[newCurrentIndex]
+          });
+          return;
         }
+      } else if (index < currentIndex) {
+        newCurrentIndex = currentIndex - 1;
+      }
+    }
+
+    set({
+      playlist: newPlaylist,
+      currentEpisodeIndex: newCurrentIndex
+    });
+  },
+
+  /**
+   * Moves a playlist item from one index to another.
+   */
+  moveInPlaylist: (fromIndex, toIndex) => {
+    const state = get();
+    const newPlaylist = [...state.playlist];
+    const [movedItem] = newPlaylist.splice(fromIndex, 1);
+    newPlaylist.splice(toIndex, 0, movedItem);
+
+    let newCurrentIndex = state.currentEpisodeIndex;
+    if (newCurrentIndex !== null) {
+      if (newCurrentIndex === fromIndex) {
+        newCurrentIndex = toIndex;
+      } else if (
+        (newCurrentIndex > fromIndex && newCurrentIndex <= toIndex) ||
+        (newCurrentIndex < fromIndex && newCurrentIndex >= toIndex)
+      ) {
+        newCurrentIndex += fromIndex < toIndex ? -1 : 1;
+      }
+    }
+
+    set({
+      playlist: newPlaylist,
+      currentEpisodeIndex: newCurrentIndex
+    });
+  },
+
+  /**
+   * Clears the playlist but optionally retains the current episode.
+   */
+  clearPlaylist: () => {
+    const state = get();
+    if (state.currentEpisode) {
+      set({
+        playlist: [state.currentEpisode],
+        currentEpisodeIndex: 0
       });
-    },
-
-    /**
-     * Checks whether a specific episode has been marked as completed.
-     */
-    isCompleted: (showId, seasonNumber, episodeNumber) => {
-      return get().listenedEpisodes.some(
-        ep =>
-          ep.showId === showId &&
-          ep.seasonNumber === seasonNumber &&
-          ep.episodeNumber === episodeNumber
-      );
-    },
-
-    /**
-     * Clears all listening history and progress from state and localStorage.
-     */
-    resetListeningHistory: () => {
-      set(state => {
-        state.listenedEpisodes = [];
-        state.episodeProgress = [];
-        clearListeningHistory();
+    } else {
+      set({
+        playlist: [],
+        currentEpisodeIndex: null
       });
-    },
+    }
+  },
 
-    /**
-     * Clears the current playlist
-     */
-    clearPlaylist: () => {
-      set(state => {
-        state.playlist = [];
-        state.currentEpisodeIndex = -1;
+  /**
+   * Skips to the next episode in the playlist if available.
+   */
+  skipToNext: () => {
+    const state = get();
+    if (
+      state.playlist.length === 0 ||
+      state.currentEpisodeIndex === null ||
+      state.currentEpisodeIndex >= state.playlist.length - 1
+    ) {
+      return;
+    }
+
+    const nextIndex = state.currentEpisodeIndex + 1;
+    const nextItem = state.playlist[nextIndex];
+
+    set({
+      currentEpisode: nextItem,
+      currentEpisodeIndex: nextIndex,
+      currentTime: 0,
+      isPlaying: true
+    });
+
+    const audioElement = document.querySelector('audio');
+    if (audioElement) {
+      audioElement.currentTime = 0;
+      audioElement.play().catch(err => {
+        console.error('Failed to play next episode:', err);
+        set({ isPlaying: false });
       });
-    },
+    }
+  },
 
-    /**
-     * Moves an item in the playlist from one position to another
-     */
-    moveInPlaylist: (fromIndex, toIndex) => {
-      set(state => {
-        if (
-          fromIndex < 0 || 
-          fromIndex >= state.playlist.length || 
-          toIndex < 0 || 
-          toIndex >= state.playlist.length
-        ) return;
-        
-        const item = state.playlist[fromIndex];
-        state.playlist.splice(fromIndex, 1);
-        state.playlist.splice(toIndex, 0, item);
-        
-        // Update currentEpisodeIndex if needed
-        if (state.currentEpisodeIndex === fromIndex) {
-          state.currentEpisodeIndex = toIndex;
-        } else if (
-          state.currentEpisodeIndex > fromIndex && 
-          state.currentEpisodeIndex <= toIndex
-        ) {
-          state.currentEpisodeIndex--;
-        } else if (
-          state.currentEpisodeIndex < fromIndex && 
-          state.currentEpisodeIndex >= toIndex
-        ) {
-          state.currentEpisodeIndex++;
-        }
+  /**
+   * Skips to previous episode or restarts current one.
+   */
+  skipToPrevious: () => {
+    const state = get();
+    if (state.currentTime > 3) {
+      set({ currentTime: 0 });
+      const audioElement = document.querySelector('audio');
+      if (audioElement) {
+        audioElement.currentTime = 0;
+      }
+      return;
+    }
+
+    if (
+      state.playlist.length === 0 ||
+      state.currentEpisodeIndex === null ||
+      state.currentEpisodeIndex <= 0
+    ) {
+      return;
+    }
+
+    const prevIndex = state.currentEpisodeIndex - 1;
+    const prevItem = state.playlist[prevIndex];
+
+    set({
+      currentEpisode: prevItem,
+      currentEpisodeIndex: prevIndex,
+      currentTime: 0,
+      isPlaying: true
+    });
+
+    const audioElement = document.querySelector('audio');
+    if (audioElement) {
+      audioElement.currentTime = 0;
+      audioElement.play().catch(err => {
+        console.error('Failed to play previous episode:', err);
+        set({ isPlaying: false });
       });
-    },
+    }
+  },
 
-    /**
-     * Removes an item from the playlist
-     */
-    removeFromPlaylist: (index) => {
-      set(state => {
-        if (index < 0 || index >= state.playlist.length) return;
-        
-        state.playlist.splice(index, 1);
-        
-        // Update currentEpisodeIndex if needed
-        if (index === state.currentEpisodeIndex) {
-          // If removing current episode, play next one if available
-          if (index < state.playlist.length) {
-            state.currentEpisode = state.playlist[index];
-          } else if (state.playlist.length > 0) {
-            state.currentEpisodeIndex = state.playlist.length - 1;
-            state.currentEpisode = state.playlist[state.currentEpisodeIndex];
-          } else {
-            state.currentEpisodeIndex = -1;
-            state.currentEpisode = null;
-          }
-        } else if (index < state.currentEpisodeIndex) {
-          state.currentEpisodeIndex--;
-        }
-      });
-    },
+  /**
+   * Sets the current playback time.
+   */
+  setCurrentTime: time => {
+    set({ currentTime: time });
+  },
 
-    /**
-     * Sets a sleep timer to automatically pause playback
-     * @param minutes Number of minutes until playback should stop, or null to cancel
-     */
-    setSleepTimer: (minutes) => {
-      set(state => {
-        state.sleepTimer = minutes ? Date.now() + minutes * 60 * 1000 : null;
-      });
-    },
+  /**
+   * Sets the total duration of the current episode.
+   */
+  setDuration: duration => {
+    set({ duration });
+  },
 
-    /**
-     * Records analytics data about the current listening session
-     */
-    recordListeningSession: () => {
-      const { currentEpisode, currentTime, duration } = get();
-      if (!currentEpisode) return;
+  /**
+   * Skips forward in the episode by given seconds.
+   */
+  skipForward: seconds => {
+    const state = get();
+    if (!state.currentEpisode) return;
 
-      set(state => {
-        const { showId, episode } = currentEpisode;
-        const episodeId = episode.episode;
+    const newTime = Math.min(state.currentTime + seconds, state.duration);
+    set({ currentTime: newTime });
 
-        state.listeningHistory.push({
-          showId,
-          episodeId,
-          startTime: new Date().toISOString(),
-          duration: currentTime,
-          completed: currentTime >= duration * 0.9, // Mark as completed if listened to 90%
-        });
-        
-        // Store in localStorage
-        localStorage.setItem('listeningHistory', JSON.stringify(state.listeningHistory));
-      });
-    },
-  }))
-);
+    const audioElement = document.querySelector('audio');
+    if (audioElement) {
+      audioElement.currentTime = newTime;
+    }
+  },
+
+  /**
+   * Skips backward in the episode by given seconds.
+   */
+  skipBackward: seconds => {
+    const state = get();
+    if (!state.currentEpisode) return;
+
+    const newTime = Math.max(state.currentTime - seconds, 0);
+    set({ currentTime: newTime });
+
+    const audioElement = document.querySelector('audio');
+    if (audioElement) {
+      audioElement.currentTime = newTime;
+    }
+  },
+
+  /**
+   * Sets playback volume and persists it.
+   */
+  setVolume: volume => {
+    set({ volume });
+    localStorage.setItem('codecast_volume', volume.toString());
+  },
+
+  /**
+   * Toggles mute state based on current volume.
+   */
+  toggleMute: () => {
+    set(state => ({
+      isMuted: state.isMuted === 0 ? state.volume : 0
+    }));
+  },
+
+  /**
+   * Sets playback speed and saves to localStorage.
+   */
+  setPlaybackRate: rate => {
+    set({ playbackRate: rate });
+    localStorage.setItem('codecast_playback_rate', rate.toString());
+  },
+
+  /**
+   * Sets or clears the sleep timer.
+   */
+  setSleepTimer: minutes => {
+    if (minutes === null) {
+      set({ sleepTimer: null });
+    } else {
+      const timer = Date.now() + minutes * 60 * 1000;
+      set({ sleepTimer: timer });
+    }
+  },
+
+  /**
+   * Marks the current episode as completed and persists the state.
+   */
+  markAsCompleted: () => {
+    const state = get();
+    if (!state.currentEpisode) return;
+
+    const { showId, seasonNumber, episode } = state.currentEpisode;
+    const key = getEpisodeKey(showId, seasonNumber, episode.episode);
+
+    const updatedCompleted = { ...state.completedEpisodes, [key]: true };
+    set({ completedEpisodes: updatedCompleted });
+    localStorage.setItem('codecast_completed_episodes', JSON.stringify(updatedCompleted));
+  },
+
+  /**
+   * Saves playback progress for current episode.
+   */
+  saveProgress: () => {
+    const state = get();
+    if (!state.currentEpisode || state.currentTime < 10) return;
+
+    const { showId, seasonNumber, episode } = state.currentEpisode;
+    const key = getEpisodeKey(showId, seasonNumber, episode.episode);
+
+    const updatedProgress = { ...state.episodeProgress, [key]: state.currentTime };
+    set({ episodeProgress: updatedProgress });
+    localStorage.setItem('codecast_episode_progress', JSON.stringify(updatedProgress));
+  },
+
+  /**
+   * Checks if an episode has been marked as completed.
+   */
+  isCompleted: (showId, seasonNumber, episodeNumber) => {
+    const state = get();
+    const key = getEpisodeKey(showId, seasonNumber, episodeNumber);
+    return !!state.completedEpisodes[key];
+  },
+
+  /**
+   * Retrieves saved playback progress for a specific episode.
+   */
+  getEpisodeProgress: (showId, seasonNumber, episodeNumber) => {
+    const state = get();
+    const key = getEpisodeKey(showId, seasonNumber, episodeNumber);
+    return state.episodeProgress[key] || null;
+  },
+
+  /**
+   * Resets playback state when leaving a show.
+   */
+  resetShowState: () => {
+    set({
+      currentEpisode: null,
+      isPlaying: false,
+      currentTime: 0,
+      duration: 0
+    });
+  }
+}));

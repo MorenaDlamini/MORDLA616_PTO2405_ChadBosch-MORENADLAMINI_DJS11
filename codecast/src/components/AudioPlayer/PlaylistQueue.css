@@ -1,9 +1,12 @@
-/* src/components/AudioPlayer/PlaylistQueue.css */
+/* === Playlist Queue Container === */
 
 .playlist-queue {
+  /* Fixed position near the bottom-right of the viewport */
   position: fixed;
   bottom: 80px;
   right: 20px;
+
+  /* Size and layout */
   width: 320px;
   max-height: 400px;
   background-color: white;
@@ -12,8 +15,10 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  z-index: 999;
+  z-index: 999; /* Ensure it's above other UI elements */
 }
+
+/* === Header Section === */
 
 .playlist-queue__header {
   display: flex;
@@ -32,8 +37,10 @@
 
 .playlist-queue__actions {
   display: flex;
-  gap: 8px;
+  gap: 8px; /* Space between action buttons */
 }
+
+/* === Action Buttons === */
 
 .playlist-queue__clear-btn,
 .playlist-queue__close-btn {
@@ -60,6 +67,8 @@
   background-color: #f3f4f6;
 }
 
+/* === Playlist List Container === */
+
 .playlist-queue__list {
   list-style: none;
   margin: 0;
@@ -78,12 +87,14 @@
   font-size: 0.9rem;
 }
 
+/* === Individual Playlist Items === */
+
 .playlist-item {
   display: flex;
   align-items: center;
   padding: 10px 16px;
   border-bottom: 1px solid #f3f4f6;
-  cursor: move;
+  cursor: move; /* Used for drag-and-drop */
   transition: background-color 0.2s ease;
 }
 
@@ -91,10 +102,12 @@
   background-color: #f9fafb;
 }
 
+/* Highlighted background for currently playing episode */
 .playlist-item--current {
   background-color: rgba(67, 56, 202, 0.1);
 }
 
+/* Visual indicators for drag-and-drop targets */
 .playlist-item--drag-top {
   border-top: 2px solid #4338ca;
 }
@@ -102,6 +115,8 @@
 .playlist-item--drag-bottom {
   border-bottom: 2px solid #4338ca;
 }
+
+/* === Episode Number Bubble === */
 
 .playlist-item__number {
   width: 24px;
@@ -115,6 +130,8 @@
   flex-shrink: 0;
 }
 
+/* === Visualizer Animation === */
+
 .playlist-item__playing-indicator {
   display: flex;
   align-items: flex-end;
@@ -122,12 +139,14 @@
   gap: 2px;
 }
 
+/* Bars representing the audio visualizer */
 .playing-bar {
   width: 3px;
   background-color: #4338ca;
   animation: sound 0.8s infinite ease-in-out alternate;
 }
 
+/* Varying height and animation delay for wave effect */
 .playing-bar:nth-child(1) {
   height: 8px;
   animation-delay: 0s;
@@ -143,6 +162,7 @@
   animation-delay: 0.4s;
 }
 
+/* Keyframes for visualizer animation */
 @keyframes sound {
   0% {
     transform: scaleY(0.8);
@@ -151,6 +171,8 @@
     transform: scaleY(1.2);
   }
 }
+
+/* === Episode Content Info === */
 
 .playlist-item__content {
   flex-grow: 1;
@@ -175,6 +197,8 @@
   text-overflow: ellipsis;
 }
 
+/* === Remove Button (hidden until hover) === */
+
 .playlist-item__remove-btn {
   background: none;
   border: none;
@@ -195,6 +219,7 @@
   opacity: 0;
 }
 
+/* Show remove button only on hover */
 .playlist-item:hover .playlist-item__remove-btn {
   visibility: visible;
   opacity: 1;
@@ -205,6 +230,8 @@
   color: #4b5563;
 }
 
+/* === Instructional Footer === */
+
 .playlist-queue__instructions {
   padding: 8px 16px;
   background-color: #f9fafb;
@@ -214,72 +241,73 @@
   text-align: center;
 }
 
-/* Dark mode support */
+/* === Dark Mode Support === */
+
 @media (prefers-color-scheme: dark) {
   .playlist-queue {
     background-color: #1a1b1e;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.4);
   }
-  
+
   .playlist-queue__header {
     border-bottom-color: #2a2b2c;
   }
-  
+
   .playlist-queue__title {
     color: #e2e2e2;
   }
-  
+
   .playlist-queue__clear-btn,
   .playlist-queue__close-btn {
     color: #a0a0a0;
   }
-  
+
   .playlist-queue__clear-btn:hover,
   .playlist-queue__close-btn:hover {
     background-color: #2a2b2c;
   }
-  
+
   .playlist-queue__empty {
     color: #a0a0a0;
   }
-  
+
   .playlist-item {
     border-bottom-color: #2a2b2c;
   }
-  
+
   .playlist-item:hover {
     background-color: #2a2b2c;
   }
-  
+
   .playlist-item--current {
     background-color: rgba(99, 102, 241, 0.2);
   }
-  
+
   .playlist-item__number {
     color: #a0a0a0;
   }
-  
+
   .playing-bar {
     background-color: #818cf8;
   }
-  
+
   .playlist-item__title {
     color: #e2e2e2;
   }
-  
+
   .playlist-item__show {
     color: #a0a0a0;
   }
-  
+
   .playlist-item__remove-btn {
     color: #a0a0a0;
   }
-  
+
   .playlist-item__remove-btn:hover {
     background-color: #3a3b3c;
     color: #e2e2e2;
   }
-  
+
   .playlist-queue__instructions {
     background-color: #2a2b2c;
     border-top-color: #3a3b3c;
@@ -287,11 +315,12 @@
   }
 }
 
-/* Mobile adjustments */
+/* === Mobile Responsiveness === */
+
 @media (max-width: 576px) {
   .playlist-queue {
     right: 0;
-    bottom: 110px; /* Adjusted for taller mobile player */
+    bottom: 110px; /* Adjusted to avoid overlap with mobile player UI */
     width: 100%;
     border-radius: 0;
   }
