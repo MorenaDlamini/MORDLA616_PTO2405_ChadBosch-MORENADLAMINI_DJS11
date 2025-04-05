@@ -1,8 +1,7 @@
-# CodeCast: Modern Podcast Player Web Application
+# CodeCast: Modern Podcast Web Application
 
 <div align="center">
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/your-netlify-badge-id/deploy-status)](https://app.netlify.com/sites/codecastpod/deploys)
 [![TypeScript](https://img.shields.io/badge/TypeScript-4.9%2B-blue)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-18.0%2B-61DAFB)](https://reactjs.org/)
 [![Zustand](https://img.shields.io/badge/Zustand-4.3%2B-orange)](https://github.com/pmndrs/zustand)
@@ -146,91 +145,83 @@ CodeCast uses Zustand for state management with isolated stores:
 ## 📁 Project Structure
 
 ```
-codecast/
-│
 src/
-│
+├── App.css                        # Root component styles
+├── App.tsx                        # Root component with routing
+├── index.css                      # Global styles
+├── main.tsx                       # Application entry point
+├── vite-env.d.ts                  # Vite type declarations
 ├── assets/                        # Static assets
-│   ├── icons/                     # Application icons
-│   ├── images/                    # Static images
-│   └── fonts/                     # Typography assets
-│
+│   ├── favicon.ico                # Browser favicon
+│   └── react.svg                  # React logo
 ├── components/                    # UI components
-│   ├── AudioPlayer/
+│   ├── AudioPlayer/               # Audio playback components
+│   │   ├── AudioPlayer.css        # Player styling
 │   │   ├── AudioPlayer.tsx        # Main player component
-│   │   ├── AudioControls.tsx      # Playback control buttons
-│   │   ├── ProgressBar.tsx        # Seekable timeline
-│   │   ├── VolumeControl.tsx      # Volume adjustment
-│   │   ├── PlaybackRateMenu.tsx   # Speed control options
-│   │   ├── PlaylistQueue.tsx      # Track queue manager
-│   │   └── AudioPlayer.css        # Player styling
+│   │   ├── PlaylistQueue.css      # Queue styling
+│   │   └── PlaylistQueue.tsx      # Queue management
 │   │
-│   ├── ShowComponents/
-│   │   ├── ShowCard.tsx           # Individual show display
-│   │   ├── ShowCarousel.tsx       # Featured shows slider
-│   │   ├── ShowGrid.tsx           # Main show browser
-│   │   └── ShowHeader.tsx         # Show detail page header
-│   │
-│   ├── EpisodeComponents/
-│   │   ├── EpisodeList.tsx        # Episode listing
-│   │   ├── EpisodeItem.tsx        # Individual episode row
-│   │   └── EpisodeProgress.tsx    # Progress indicator
+│   ├── EpisodeList/               # Episode listing components
+│   │   ├── EpisodeList.css        # Episode list styling
+│   │   └── EpisodeList.tsx        # Episode list component
 │   │
 │   ├── FavoritesList/             # Favorites management
-│   ├── Filters/                   # Search and filter components
-│   ├── Navigation/                # App navigation elements
-│   ├── ThemeToggle/               # Theme controls
+│   │   ├── FavoritesList.css      # Favorites styling
+│   │   └── FavoritesList.tsx      # Favorites component
+│   │
+│   ├── Filters/                   # Content filtering
+│   │   ├── Filters.css            # Filter styling
+│   │   └── Filters.tsx            # Filter component
+│   │
+│   ├── SearchFilter/              # Search functionality
+│   │   ├── SearchFilter.css       # Search styling
+│   │   └── SearchFilter.tsx       # Search component
+│   │
+│   ├── SeasonList/                # Season browsing
+│   │   ├── SeasonList.css         # Season list styling
+│   │   └── SeasonList.tsx         # Season list component
+│   │
+│   ├── ShowCard/                  # Show display card
+│   │   ├── ShowCard.css           # Card styling
+│   │   └── ShowCard.tsx           # Card component
+│   │
+│   ├── ShowCarousel/              # Featured content slider
+│   │   ├── ShowCarousel.css       # Carousel styling
+│   │   └── ShowCarousel.tsx       # Carousel component
+│   │
+│   ├── ThemeToggle/               # Theme switching
+│   │   └── ThemeToggle.tsx        # Theme toggle component
+│   │
 │   └── ui/                        # Common UI elements
-│       ├── Button/                # Button variants
-│       ├── Loading/               # Loading indicators
-│       ├── Typography/            # Text styling components
-│       └── Modal/                 # Dialog components
-│
+│       └── Loading/               # Loading indicators
+│           ├── Loading.css        # Loading styling
+│           └── Loading.tsx        # Loading component
 ├── hooks/                         # Custom React hooks
-│   ├── useAudio.ts                # Audio element management
-│   ├── useLocalStorage.ts         # Storage persistence
-│   ├── useMediaQuery.ts           # Responsive design
-│   └── useDebounce.ts             # Performance optimization
-│
+│   └── useAudioService.ts         # Hook for audio player integration
 ├── layouts/                       # Page layouts
-│   ├── MainLayout.tsx             # Primary app shell
-│   └── PlayerLayout.tsx           # Layout with persistent player
-│
-├── pages/                         # Route components
+│   ├── MainLayout.css             # Layout styling
+│   └── MainLayout.tsx             # Main application layout
+├── pages/                         # Route-level components
+│   ├── Favorites.tsx              # Favorites page
 │   ├── Home.tsx                   # Landing page
-│   ├── Show.tsx                   # Show details
-│   ├── Season.tsx                 # Season episodes
-│   ├── Favorites.tsx              # User favorites
 │   ├── NotFound.tsx               # 404 page
-│   └── index.ts                   # Pages barrel file
-│
+│   ├── Pages.css                  # Shared page styling
+│   ├── Season.tsx                 # Season details page
+│   └── Show.tsx                   # Show details page
 ├── services/                      # Business logic
 │   ├── api.ts                     # Data fetching
 │   ├── audioService.ts            # Audio playback engine
 │   └── storage.ts                 # Local data persistence
-│
 ├── store/                         # Zustand state stores
-│   ├── playerStore.ts             # Audio state management
+│   ├── favoritesStore.ts          # User favorites management
+│   ├── playerStore.ts             # Audio playback state
 │   ├── showsStore.ts              # Content catalog
-│   ├── favoritesStore.ts          # User preferences
 │   └── themeStore.ts              # UI theme state
-│
 ├── types/                         # TypeScript definitions
-│   ├── audio.types.ts             # Audio-related interfaces
-│   ├── show.types.ts              # Content model types
-│   └── index.ts                   # Type exports
-│
-├── utils/                         # Utility functions
-│   ├── dateUtils.ts               # Date formatting
-│   ├── audioUtils.ts              # Audio helpers
-│   ├── storageUtils.ts            # Storage helpers
-│   ├── searchUtils.ts             # Search algorithms
-│   └── formatters.ts              # Text formatting
-│
-├── App.tsx                        # Root component
-├── main.tsx                       # Entry point
-├── index.css                      # Global styles
-└── vite-env.d.ts                  # Vite type declarations
+│   └── index.ts                   # Type declarations
+└── utils/                         # Utility functions
+    ├── dateUtils.ts               # Date formatting utilities
+    └── searchUtils.ts             # Search algorithms
 ```
 
 ## 🔧 Technical Details
@@ -538,5 +529,5 @@ See [CONTRIBUTING.md](path/to/CONTRIBUTING.md) for detailed guidelines.
 <div align="center">
   Made with ❤️ by the CodeCast Team
   
-  [GitHub](https://github.com/your-org) | [Twitter](https://twitter.com/your-handle) | [Live Site](https://codecastpod.netlify.app/)
+  [GitHub](https://github.com/MorenaDlamini) | | [Live Site](https://codecastpod.netlify.app/)
 </div>
