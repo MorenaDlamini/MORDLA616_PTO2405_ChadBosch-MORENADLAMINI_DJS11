@@ -492,8 +492,6 @@ We welcome contributions to CodeCast! Please follow these steps:
 6. **Push to Branch**: `git push origin feature/amazing-feature`
 7. **Open Pull Request**: Submit your changes for review
 
-See [CONTRIBUTING.md](path/to/CONTRIBUTING.md) for detailed guidelines.
-
 ## 🐛 Known Issues
 
 - Sleep timer occasionally resets when switching between tabs
