@@ -6,9 +6,9 @@
   flex-direction: column;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  background-color: #fff;
+  box-shadow: 0 4px 6px var(--color-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, var(--transition-theme);
+  background-color: var(--color-surface);
   height: 100%;
   text-decoration: none;
   color: inherit; /* Inherit text color to avoid blue link styles */
@@ -18,7 +18,7 @@
 /* 🔄 Card hover interaction */
 .show-card:hover {
   transform: translateY(-4px); /* Subtle lift effect */
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); /* More prominent shadow */
+  box-shadow: 0 10px 15px var(--color-shadow); /* More prominent shadow */
 }
 
 /* 🖼️ Image container with responsive 16:9 ratio */
@@ -66,18 +66,19 @@
   margin-bottom: 8px;
   font-size: 1.25rem;
   font-weight: 600;
-  color: #333;
+  color: var(--color-text-dark);
   height: 2.5rem; /* Fixed height for title */
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2; /* Limit to 2 lines */
   -webkit-box-orient: vertical;
+  transition: var(--transition-theme);
 }
 
 /* 🧾 Show description snippet */
 .show-card__description {
   margin-bottom: 16px;
-  color: #666;
+  color: var(--color-text-medium);
   font-size: 0.9rem;
   line-height: 1.4;
   flex-grow: 1; /* Pushes meta info to the bottom */
@@ -86,6 +87,7 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   height: 3.8em; /* Approximately 3 lines of text */
+  transition: var(--transition-theme);
 }
 
 /* 📊 Metadata section (genres, last updated) */
@@ -105,15 +107,17 @@
 
 /* 🏷️ Individual genre pill */
 .show-card__genre {
-  background-color: #f0f4f8;
-  color: #4a5568;
+  background-color: var(--color-border);
+  color: var(--color-text-medium);
   padding: 2px 8px;
   border-radius: 12px;
   font-size: 0.8rem;
+  transition: var(--transition-theme);
 }
 
 /* 🕒 Last updated date label */
 .show-card__updated {
-  color: #718096;
+  color: var(--color-text-light);
   font-size: 0.8rem;
+  transition: var(--transition-theme);
 }
