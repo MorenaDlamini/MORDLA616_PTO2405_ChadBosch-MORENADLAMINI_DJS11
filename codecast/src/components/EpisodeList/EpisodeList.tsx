@@ -1,6 +1,6 @@
 // src/components/EpisodeList/EpisodeList.tsx
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Episode } from '../../types';
 import { usePlayerStore } from '../../store/playerStore';
 import { useFavoritesStore } from '../../store/favoritesStore';
@@ -33,12 +33,16 @@ const EpisodeList: React.FC<EpisodeListProps> = ({
   seasonTitle,
   episodes,
 }) => {
+  // Track which episodes have been added to queue for UI feedback
+  const [recentlyQueued, setRecentlyQueued] = useState<number[]>([]);
+  
   const {
     playEpisode,
     addToPlaylist,
     currentEpisode,
     isCompleted,
     getEpisodeProgress,
+    playlist
   } = usePlayerStore();
 
   const {
@@ -56,11 +60,32 @@ const EpisodeList: React.FC<EpisodeListProps> = ({
   };
 
   /**
-   * Adds the selected episode to the playback queue.
+   * Adds the selected episode to the playback queue with visual feedback.
    * @param episode - The episode to queue
    */
   const handleAddToQueue = (episode: Episode) => {
+    console.log(`Adding episode ${episode.episode} to queue: ${episode.title}`);
+    
+    // Store entire playlist before adding
+    const playlistBefore = [...playlist];
+    console.log("Playlist before adding:", playlistBefore.map(p => p.episode.title));
+    
+    // Add to playlist
     addToPlaylist(showId, showTitle, seasonNumber, seasonTitle, episode);
+    
+    // Show visual feedback
+    setRecentlyQueued(prev => [...prev, episode.episode]);
+    
+    // Clear visual feedback after 2 seconds
+    setTimeout(() => {
+      setRecentlyQueued(prev => prev.filter(ep => ep !== episode.episode));
+    }, 2000);
+    
+    // Check playlist after adding
+    setTimeout(() => {
+      const currentPlaylist = usePlayerStore.getState().playlist;
+      console.log("Playlist after adding:", currentPlaylist.map(p => p.episode.title));
+    }, 100);
   };
 
   /**
@@ -74,6 +99,20 @@ const EpisodeList: React.FC<EpisodeListProps> = ({
     } else {
       addFavorite(showId, showTitle, seasonNumber, seasonTitle, episode);
     }
+  };
+  
+  /**
+   * Checks if an episode is already in the playlist
+   * @param episode - The episode to check
+   * @returns boolean - Whether the episode is in the playlist
+   */
+  const isInPlaylist = (episode: Episode): boolean => {
+    return playlist.some(
+      item =>
+        item.showId === showId &&
+        item.seasonNumber === seasonNumber &&
+        item.episode.episode === episode.episode
+    );
   };
 
   return (
@@ -92,6 +131,12 @@ const EpisodeList: React.FC<EpisodeListProps> = ({
 
           // Check if this episode is marked as a favorite
           const isFavorited = isFavorite(showId, seasonNumber, episode.episode);
+          
+          // Check if this episode is in playlist/queue
+          const inPlaylist = isInPlaylist(episode);
+          
+          // Check if recently queued for animation/feedback
+          const isRecentlyQueued = recentlyQueued.includes(episode.episode);
 
           // Retrieve the saved playback progress
           const savedProgress = getEpisodeProgress(showId, seasonNumber, episode.episode);
@@ -101,7 +146,8 @@ const EpisodeList: React.FC<EpisodeListProps> = ({
               key={episode.episode}
               className={`episode-item 
                 ${isCurrentlyPlaying ? 'episode-item--playing' : ''} 
-                ${hasCompleted ? 'episode-item--completed' : ''}`}
+                ${hasCompleted ? 'episode-item--completed' : ''}
+                ${isRecentlyQueued ? 'episode-item--queued' : ''}`}
             >
               {/* Episode number display */}
               <div className="episode-item__number">{episode.episode}</div>
@@ -134,6 +180,31 @@ const EpisodeList: React.FC<EpisodeListProps> = ({
                     </span>
                   </div>
                 )}
+                
+                {/* Show in playlist indicator if it's already queued */}
+                {inPlaylist && !isCurrentlyPlaying && (
+                  <div className="episode-item__in-playlist">
+                    <div className="episode-item__playlist-icon">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="16"
+                        height="16"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M9 18V5l12-2v13"></path>
+                        <circle cx="6" cy="18" r="3"></circle>
+                        <circle cx="21" cy="16" r="3"></circle>
+                      </svg>
+                    </div>
+                    <span className="episode-item__playlist-text">
+                      In Queue
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Interactive controls: favorite, queue, play */}
@@ -161,9 +232,10 @@ const EpisodeList: React.FC<EpisodeListProps> = ({
 
                 {/* Add to queue button */}
                 <button
-                  className="episode-item__queue-btn"
+                  className={`episode-item__queue-btn ${isRecentlyQueued ? 'episode-item__queue-btn--active' : ''} ${inPlaylist ? 'episode-item__queue-btn--in-queue' : ''}`}
                   onClick={() => handleAddToQueue(episode)}
-                  aria-label="Add to queue"
+                  aria-label={inPlaylist ? "Already in queue" : "Add to queue"}
+                  disabled={isCurrentlyPlaying}
                 >
                   <svg
                     viewBox="0 0 24 24"
@@ -176,8 +248,23 @@ const EpisodeList: React.FC<EpisodeListProps> = ({
                     strokeLinejoin="round"
                     className="episode-item__queue-icon"
                   >
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    {isRecentlyQueued ? (
+                      // Checkmark when recently added
+                      <path d="M20 6L9 17l-5-5"></path>
+                    ) : inPlaylist ? (
+                      // Music note when already in playlist
+                      <>
+                        <path d="M9 18V5l12-2v13"></path>
+                        <circle cx="6" cy="18" r="3"></circle>
+                        <circle cx="21" cy="16" r="3"></circle>
+                      </>
+                    ) : (
+                      // Plus sign for adding
+                      <>
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </>
+                    )}
                   </svg>
                 </button>
 

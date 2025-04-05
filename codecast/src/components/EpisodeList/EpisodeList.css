@@ -42,6 +42,17 @@
   background-color: var(--color-primary-light, rgba(67, 56, 202, 0.1));
 }
 
+/* Style for recently queued episodes - subtle animation */
+.episode-item--queued {
+  animation: queue-pulse 1s ease-in-out;
+}
+
+@keyframes queue-pulse {
+  0% { background-color: var(--color-surface); }
+  50% { background-color: rgba(67, 56, 202, 0.15); }
+  100% { background-color: var(--color-surface); }
+}
+
 /* Add transparent primary color background for dark mode */
 [data-theme='dark'] .episode-item--playing {
   background-color: rgba(99, 102, 241, 0.2);
@@ -126,6 +137,27 @@
   font-weight: 500;
 }
 
+/* In playlist indicator */
+.episode-item__in-playlist {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+  color: var(--color-primary);
+  font-size: 0.85rem;
+}
+
+/* Playlist icon styling */
+.episode-item__playlist-icon {
+  margin-right: 6px;
+  display: flex;
+  align-items: center;
+}
+
+/* In playlist text */
+.episode-item__playlist-text {
+  font-weight: 500;
+}
+
 /* Right-aligned button group (play + favorite + queue) */
 .episode-item__actions {
   display: flex;
@@ -159,9 +191,29 @@
   transform: scale(1.05);
 }
 
-/* Style for the queue button (similar to other buttons) */
+/* Style for the queue button */
 .episode-item__queue-btn {
   color: var(--color-primary);
+}
+
+/* Style for active queue button (just added to queue) */
+.episode-item__queue-btn--active {
+  background-color: var(--color-primary);
+  color: white;
+  animation: tick-animation 0.5s ease-in-out;
+}
+
+/* Style for in-queue button (already in playlist) */
+.episode-item__queue-btn--in-queue {
+  background-color: rgba(67, 56, 202, 0.2);
+  color: var(--color-primary);
+}
+
+/* Animation for newly queued item */
+@keyframes tick-animation {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
 }
 
 /* Add queue icon styles (matches other icons) */
